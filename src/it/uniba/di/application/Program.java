@@ -1,5 +1,6 @@
 package it.uniba.di.application;
 
+import java.awt.BorderLayout;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -94,10 +95,15 @@ public class Program extends Utility {
 		frameALA.setResizable(false);
 		frameALA.setTitle("MOTION");
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-		frameALA.setBounds(100, 100, 619, 614);
+		frameALA.setBounds(100, 100, 1000, 570);
+		/*
 		int x = (int) ((dimension.getWidth() - frameALA.getWidth()) / 2);
 		int y = (int) ((dimension.getHeight() - frameALA.getHeight()) / 2);
-		frameALA.setBounds(x, y, 619, 763);
+		*/
+		int x = (int) ((dimension.getWidth() - frameALA.getWidth()) / 2);
+		int y = (int) (0);
+		int height = (int) dimension.getHeight();
+		frameALA.setBounds(x, y, 1200, 550);
 		frameALA.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frameALA.getContentPane().setLayout(null);
 
@@ -203,7 +209,9 @@ public class Program extends Utility {
 		modelName = AODV_MODEL_PATH_AND_FILENAME;
 		frameALA.getContentPane().add(choice);
 
-		scrollPne.setBounds(33, 528, 543, 181);
+		x = frameALA.getWidth();
+		y = frameALA.getHeight();
+		scrollPne.setBounds(x/2 + 25,y/2 - 75,x/2 - 50 , 181);
 		scrollPne.setVisible(true);
 		scrollPne.setAutoscrolls(true);
 		frameALA.getContentPane().add(scrollPne);
@@ -211,7 +219,14 @@ public class Program extends Utility {
 		JTextPane textPane = new JTextPane();
 		JTextPane textPane_1 = new JTextPane();
 		JTextPane textPane_2 = new JTextPane();
-
+		
+		x = frameALA.getWidth();
+		y = frameALA.getHeight();
+		Visual Gs = new Visual(8,x/2 - 50 , y/2 - 100);
+		//Gs.setForeground(Color.BLACK);
+	    Gs.setBounds(x/2 + 25, 10, x/2 - 50 , y/2 - 100);
+		frameALA.getContentPane().add(Gs);
+		
 		startButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -240,6 +255,7 @@ public class Program extends Utility {
 							stopButton.setEnabled(true);
 							startButton.setEnabled(false);
 							choice.setEnabled(false);
+						
 
 							try {
 								displayInfo("Creating simulation directory and sub directories...");
@@ -301,6 +317,7 @@ public class Program extends Utility {
 										displayInfo("Now running move " + moveCounter);
 
 										if (!retryingMove) {
+											/*aggiungi gli host*/
 											switch (selectedProtocol) {
 											case "AODV":
 												connectivityMatrix = aodvParser.modelSpecificSetup(
@@ -419,6 +436,11 @@ public class Program extends Utility {
 				}).start();
 			}
 		});
+		
+		
+	
+	
+		
 		startButton.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		startButton.setBounds(111, 463, 176, 41);
 		frameALA.getContentPane().add(startButton);
@@ -615,7 +637,10 @@ public class Program extends Utility {
 		lblInitialConnectivity.setBounds(12, 207, 155, 25);
 		lblInitialConnectivity.setEnabled(true);
 		frameALA.getContentPane().add(lblInitialConnectivity);
+		
 
+		
+		
 		JLabel timeLabel = new JLabel();
 		timeLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		timeLabel.setBounds(399, 0, 201, 34);

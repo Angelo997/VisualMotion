@@ -609,23 +609,20 @@ definitions:
 		endseq
 		
 	/* START PAR */
+			rule r_MemoryManager =
+			par
 			isLinked(host1,host3):=true
 			isLinked(host3,host1):=true
-			isLinked(host1,host5):=true
-			isLinked(host5,host1):=true
 			isLinked(host2,host3):=true
 			isLinked(host3,host2):=true
-			isLinked(host2,host4):=true
-			isLinked(host4,host2):=true
 			isLinked(host2,host5):=true
 			isLinked(host5,host2):=true
-			isLinked(host3,host4):=true
-			isLinked(host4,host3):=true
 
-	/* PREDICATE_INIT */
-	/* ROUTING_TABLE */
-	/* MESSAGES */
+
+
+
 	/* END PAR */
+			endpar
 
 	rule r_AodvSpec = 
 		seq 
@@ -652,9 +649,12 @@ definitions:
 	
 	main rule r_Main = 
 		/* START SEQ MAIN */
+			seq
+				r_MemoryManager[]
 			forall $a in Agent do
 				program($a) 
 		/* END SEQ MAIN */
+			endseq
 
 
 default init s0:	
