@@ -222,7 +222,7 @@ public class Program extends Utility {
 		
 		x = frameALA.getWidth();
 		y = frameALA.getHeight();
-		Visual Gs = new Visual(8,x/2 - 50 , y/2 - 100);
+		Visual Gs = new Visual(x/2 - 50 , y/2 - 100);
 		//Gs.setForeground(Color.BLACK);
 	    Gs.setBounds(x/2 + 25, 10, x/2 - 50 , y/2 - 100);
 		frameALA.getContentPane().add(Gs);
@@ -233,6 +233,7 @@ public class Program extends Utility {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
+						Gs.setNumberHost((int) fieldHost.getValue());
 						String selectedProtocol = choice.getSelectedItem();
 						if ((int) fieldSession.getValue() > 0) {
 							switch (selectedProtocol) {
@@ -311,11 +312,13 @@ public class Program extends Utility {
 									default:
 										break;
 									}
+									
+									
 									displayInfo("Now running session " + session);
 									for (int moveCounter = 1; moveCounter <= sessionTimeout
 											&& isSimulationOk; moveCounter++) {
 										displayInfo("Now running move " + moveCounter);
-
+										
 										if (!retryingMove) {
 											/*aggiungi gli host*/
 											switch (selectedProtocol) {

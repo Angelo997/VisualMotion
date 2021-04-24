@@ -30,17 +30,18 @@ import java.util.TreeMap;
 
 
 public class Visual extends JPanel {
-	
+
 	private double width; 
 	private double height;
-	private int n_host;		
+	
+	private int n_host = 0;		
 	private TreeMap<Integer,host> hosts = new TreeMap<Integer,host>();
 	
 	public static void main(String[] args) {
 	    JFrame window;
 	    window = new JFrame("host");  // The parameter shows in the window title bar.
 	    
-	    Visual panel = new Visual(8,500,500); // The drawing area.
+	    Visual panel = new Visual(500,500); // The drawing area.
 	    window.getContentPane().add( panel ); // Show the panel in the window.
 	    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // End program when window closes.
 	    window.pack();  // Set window size based on the preferred sizes of its contents.
@@ -50,30 +51,39 @@ public class Visual extends JPanel {
 	            (screen.width - window.getWidth())/2, 
 	            (screen.height - window.getHeight())/2 );
 	    panel.requestFocusInWindow();  // make sure key events go to the panel.
+	    panel.setNumberHost(6);
 	    window.setVisible(true); // Open the window, making it visible on the screen.
+	    panel.repaint();
 	}
 	    
 	
-	Visual(int n,int w,int h){
+	Visual(int w,int h){
+		
+		//center of the canvas
+		setPreferredSize( new Dimension(w,h));
+		width = w;
+		height = h;
+		
+	}
+	
+	void setNumberHost(int n){
 		
 		n_host = n;
-		//center of the canvas
-		double xcenter  = (w/2);
-		double ycenter = (h/2);
-		
-		setPreferredSize( new Dimension(w,h));
-		
-		double r = Math.min(w,h)/2;
-		double d = r/5;
+		double r = Math.min(width,height)/2;
+		double d = r/6;
 		r = r - d/2 - 10;
-		
+		double xcenter  = (width/2);
+		double ycenter = (height/2);
 		for(int i = 0; i < n_host; i++) { // number vertex is the number of host
 		    double x = xcenter - (r * Math.cos(2 * Math.PI * i / n_host)) - d/2;
 			double y = ycenter - (r * Math.sin(2 * Math.PI * i / n_host)) - d/2;
 			hosts.put(i, new host(i,x,y,d));
 
 	  }
+		repaint();	
 	}
+	
+
 	
 	class host {
 		int id;
@@ -104,7 +114,7 @@ public class Visual extends JPanel {
 		    g2.setPaint(Color.BLACK);
 		    g2.draw( new Ellipse2D.Double(x,y,dim,dim) );
 		    
-	        
+	        //MODIFICARE IL FONT DEI NUMERI ALL'INTERNO DEGLI HOST
 	        g2.setPaint(Color.BLACK);
 	        drawCenteredString(g2,Integer.toString(id),new Ellipse2D.Double(x,y,dim,dim) , g2.getFont());    
 	   }
@@ -134,7 +144,6 @@ public class Visual extends JPanel {
 	
    protected void paintComponent(Graphics g) {
 	   super.paintComponent(g);
-	   
 	   Graphics2D g2 = (Graphics2D)g;
 	   
 	   //abilita antialiasing

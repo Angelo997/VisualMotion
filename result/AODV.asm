@@ -39,6 +39,8 @@ signature:
 	static host3: Agent
 	static host4: Agent
 	static host5: Agent
+	static host6: Agent
+	static host7: Agent
 	
 	derived dest: Message -> Agent	
 	derived destSeqNum: Message -> Integer	
@@ -613,14 +615,226 @@ definitions:
 			par
 			isLinked(host1,host3):=true
 			isLinked(host3,host1):=true
-			isLinked(host2,host3):=true
-			isLinked(host3,host2):=true
+			isLinked(host1,host4):=true
+			isLinked(host4,host1):=true
+			isLinked(host1,host5):=true
+			isLinked(host5,host1):=true
+			isLinked(host2,host4):=true
+			isLinked(host4,host2):=true
 			isLinked(host2,host5):=true
 			isLinked(host5,host2):=true
+			isLinked(host2,host6):=true
+			isLinked(host6,host2):=true
+			isLinked(host2,host7):=true
+			isLinked(host7,host2):=true
+			isLinked(host3,host6):=true
+			isLinked(host6,host3):=true
+			isLinked(host4,host5):=true
+			isLinked(host5,host4):=true
+			isLinked(host4,host6):=true
+			isLinked(host6,host4):=true
+			isLinked(host4,host7):=true
+			isLinked(host7,host4):=true
+			isLinked(host5,host6):=true
+			isLinked(host6,host5):=true
 
+			curSeqNum(host1):=1
+			curSeqNum(host3):=1
+			curSeqNum(host4):=1
+			curSeqNum(host5):=2
+			curSeqNum(host6):=1
+			lastKnownDestSeqNum(host1,host2):=undef
+			lastKnownDestSeqNum(host1,host4):=undef
+			lastKnownDestSeqNum(host3,host1):=undef
+			lastKnownDestSeqNum(host3,host2):=undef
+			lastKnownDestSeqNum(host3,host4):=undef
+			lastKnownDestSeqNum(host3,host6):=undef
+			lastKnownDestSeqNum(host3,host7):=undef
+			lastKnownDestSeqNum(host4,host2):=undef
+			lastKnownDestSeqNum(host4,host6):=undef
+			lastKnownDestSeqNum(host5,host3):=undef
+			lastKnownDestSeqNum(host5,host4):=undef
+			lastKnownDestSeqNum(host5,host6):=undef
+			lastKnownDestSeqNum(host5,host7):=undef
+			lastKnownDestSeqNum(host6,host1):=undef
+			lastKnownDestSeqNum(host6,host2):=undef
+			lastKnownDestSeqNum(host6,host3):=undef
+			lastKnownDestSeqNum(host6,host5):=undef
+			localReqCount(host1):=1
+			localReqCount(host3):=1
+			localReqCount(host4):=1
+			localReqCount(host5):=2
+			localReqCount(host6):=1
+			receivedReq(host1):=[(1,host3),(1,host4),(1,host6),(1,host1)]
+			receivedReq(host3):=[(1,host3),(1,host4),(1,host6)]
+			receivedReq(host4):=[(1,host4),(1,host6),(1,host3)]
+			receivedReq(host5):=[(1,host5),(2,host5)]
+			receivedReq(host6):=[(1,host6),(1,host4)]
+			waitingForRouteTo(host1,host2):=true
+			waitingForRouteTo(host3,host1):=true
+			waitingForRouteTo(host3,host4):=true
+			waitingForRouteTo(host3,host6):=true
+			waitingForRouteTo(host3,host7):=true
+			waitingForRouteTo(host4,host2):=true
+			waitingForRouteTo(host4,host6):=true
+			waitingForRouteTo(host5,host3):=true
+			waitingForRouteTo(host5,host4):=true
+			waitingForRouteTo(host5,host6):=true
+			waitingForRouteTo(host5,host7):=true
+			waitingForRouteTo(host6,host1):=true
+			waitingForRouteTo(host6,host2):=true
+			waitingForRouteTo(host6,host3):=true
+			waitingForRouteTo(host6,host5):=true
+			waitingForRouteToTmp(host1,host2):=5
+			waitingForRouteToTmp(host3,host1):=3
+			waitingForRouteToTmp(host3,host4):=3
+			waitingForRouteToTmp(host3,host6):=3
+			waitingForRouteToTmp(host3,host7):=3
+			waitingForRouteToTmp(host4,host2):=3
+			waitingForRouteToTmp(host4,host6):=3
+			waitingForRouteToTmp(host5,host3):=2
+			waitingForRouteToTmp(host5,host4):=5
+			waitingForRouteToTmp(host5,host6):=2
+			waitingForRouteToTmp(host5,host7):=2
+			waitingForRouteToTmp(host6,host1):=2
+			waitingForRouteToTmp(host6,host2):=2
+			waitingForRouteToTmp(host6,host3):=2
+			waitingForRouteToTmp(host6,host5):=2
 
-
-
+			extend RoutingTable with $_rt1,$_rt2,$_rt3,$_rt4,$_rt5,$_rt6,$_rt7,$_rt8 do
+				par
+									active($_rt1):=true
+					active($_rt2):=true
+					active($_rt3):=true
+					active($_rt4):=true
+					active($_rt5):=true
+					active($_rt6):=true
+					active($_rt7):=true
+					active($_rt8):=true
+					entry($_rt1):=(host6,1,1,host6)
+					entry($_rt2):=(host4,1,1,host4)
+					entry($_rt3):=(host3,1,1,host3)
+					entry($_rt4):=(host4,1,1,host4)
+					entry($_rt5):=(host6,1,2,host4)
+					entry($_rt6):=(host3,1,2,host1)
+					entry($_rt7):=(host4,1,2,host1)
+					entry($_rt8):=(host6,1,3,host1)
+					entryFor(host1):=undef
+					entryFor(host3):=undef
+					entryFor(host4):=undef
+					entryFor(host6):=undef
+					owner($_rt1):=host4
+					owner($_rt2):=host6
+					owner($_rt3):=host1
+					owner($_rt4):=host1
+					owner($_rt5):=host1
+					owner($_rt6):=host4
+					owner($_rt7):=host3
+					owner($_rt8):=host3
+					precursor($_rt1):=[]
+					precursor($_rt2):=[]
+					precursor($_rt3):=[]
+					precursor($_rt4):=[]
+					precursor($_rt5):=[]
+					precursor($_rt6):=[]
+					precursor($_rt7):=[]
+					precursor($_rt8):=[]
+				endpar
+			extend Message with $_message1,$_message2,$_message3,$_message4,$_message5,$_message6,$_message7,$_message8,$_message9,$_message10,$_message11,$_message12,$_message13,$_message14,$_message15,$_message16,$_message17,$_message18,$_message19,$_message20,$_message21,$_message22,$_message23 do
+				par
+									isConsumed(host1,$_message10):=true
+					isConsumed(host1,$_message11):=true
+					isConsumed(host1,$_message12):=true
+					isConsumed(host1,$_message13):=true
+					isConsumed(host1,$_message14):=true
+					isConsumed(host1,$_message19):=false
+					isConsumed(host1,$_message20):=false
+					isConsumed(host1,$_message22):=false
+					isConsumed(host1,$_message23):=false
+					isConsumed(host1,$_message8):=true
+					isConsumed(host1,$_message9):=true
+					isConsumed(host2,$_message16):=false
+					isConsumed(host2,$_message17):=false
+					isConsumed(host2,$_message18):=false
+					isConsumed(host3,$_message16):=true
+					isConsumed(host3,$_message17):=true
+					isConsumed(host3,$_message18):=true
+					isConsumed(host3,$_message21):=false
+					isConsumed(host4,$_message15):=true
+					isConsumed(host4,$_message16):=true
+					isConsumed(host4,$_message17):=true
+					isConsumed(host4,$_message18):=true
+					isConsumed(host4,$_message19):=false
+					isConsumed(host4,$_message21):=false
+					isConsumed(host4,$_message22):=false
+					isConsumed(host4,$_message23):=false
+					isConsumed(host4,$_message4):=true
+					isConsumed(host4,$_message5):=true
+					isConsumed(host4,$_message6):=true
+					isConsumed(host4,$_message7):=true
+					isConsumed(host5,$_message15):=false
+					isConsumed(host5,$_message16):=false
+					isConsumed(host5,$_message17):=false
+					isConsumed(host5,$_message18):=false
+					isConsumed(host5,$_message21):=false
+					isConsumed(host6,$_message10):=true
+					isConsumed(host6,$_message19):=false
+					isConsumed(host6,$_message22):=false
+					isConsumed(host6,$_message23):=false
+					isConsumed(host6,$_message8):=true
+					isConsumed(host6,$_message9):=true
+					isConsumed(host7,$_message1):=false
+					isConsumed(host7,$_message15):=false
+					isConsumed(host7,$_message19):=false
+					isConsumed(host7,$_message2):=false
+					isConsumed(host7,$_message3):=false
+					messageRREP($_message20):=(host3,0,host4,1,host4)
+					messageRREQ($_message1):=(host5,1,0,host7,undef,1,host5)
+					messageRREQ($_message10):=(host6,1,1,host2,undef,1,host4)
+					messageRREQ($_message11):=(host3,1,0,host4,undef,1,host3)
+					messageRREQ($_message12):=(host3,1,0,host7,undef,1,host3)
+					messageRREQ($_message13):=(host3,1,0,host6,undef,1,host3)
+					messageRREQ($_message14):=(host3,1,0,host1,undef,1,host3)
+					messageRREQ($_message15):=(host4,1,1,host2,undef,1,host6)
+					messageRREQ($_message16):=(host3,1,1,host4,undef,1,host1)
+					messageRREQ($_message17):=(host4,1,1,host2,undef,1,host1)
+					messageRREQ($_message18):=(host6,1,2,host2,undef,1,host1)
+					messageRREQ($_message19):=(host5,2,0,host4,undef,2,host5)
+					messageRREQ($_message2):=(host5,1,0,host6,undef,1,host5)
+					messageRREQ($_message21):=(host1,1,0,host2,undef,1,host1)
+					messageRREQ($_message22):=(host4,1,2,host2,undef,1,host3)
+					messageRREQ($_message23):=(host6,1,3,host2,undef,1,host3)
+					messageRREQ($_message3):=(host5,1,0,host3,undef,1,host5)
+					messageRREQ($_message4):=(host6,1,0,host5,undef,1,host6)
+					messageRREQ($_message5):=(host6,1,0,host1,undef,1,host6)
+					messageRREQ($_message6):=(host6,1,0,host3,undef,1,host6)
+					messageRREQ($_message7):=(host6,1,0,host2,undef,1,host6)
+					messageRREQ($_message8):=(host4,1,0,host6,undef,1,host4)
+					messageRREQ($_message9):=(host4,1,0,host2,undef,1,host4)
+					messageType($_message1):=RREQ
+					messageType($_message10):=RREQ
+					messageType($_message11):=RREQ
+					messageType($_message12):=RREQ
+					messageType($_message13):=RREQ
+					messageType($_message14):=RREQ
+					messageType($_message15):=RREQ
+					messageType($_message16):=RREQ
+					messageType($_message17):=RREQ
+					messageType($_message18):=RREQ
+					messageType($_message19):=RREQ
+					messageType($_message2):=RREQ
+					messageType($_message20):=RREP
+					messageType($_message21):=RREQ
+					messageType($_message22):=RREQ
+					messageType($_message23):=RREQ
+					messageType($_message3):=RREQ
+					messageType($_message4):=RREQ
+					messageType($_message5):=RREQ
+					messageType($_message6):=RREQ
+					messageType($_message7):=RREQ
+					messageType($_message8):=RREQ
+					messageType($_message9):=RREQ
+				endpar
 	/* END PAR */
 			endpar
 
