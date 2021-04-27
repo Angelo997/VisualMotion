@@ -320,7 +320,6 @@ public class Program extends Utility {
 										displayInfo("Now running move " + moveCounter);
 										
 										if (!retryingMove) {
-											/*aggiungi gli host*/
 											switch (selectedProtocol) {
 											case "AODV":
 												connectivityMatrix = aodvParser.modelSpecificSetup(
@@ -404,6 +403,12 @@ public class Program extends Utility {
 											default:
 												break;
 											}
+											Gs.loadLink(connectivityMatrix);
+											Gs.repaint();
+											
+											
+											//addlink
+											
 										}
 										debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "
 												+ isSimulationOk);

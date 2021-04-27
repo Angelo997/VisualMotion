@@ -22,11 +22,13 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.event.MouseMotionAdapter;
 import java.util.TreeMap;
+import java.util.concurrent.ThreadLocalRandom;
 
-
-
+import it.uniba.di.parser.AODVParser;
+import it.uniba.di.support.structures.ConnectivityMatrix;
 
 
 public class Visual extends JPanel {
@@ -36,7 +38,7 @@ public class Visual extends JPanel {
 	
 	private int n_host = 0;		
 	private TreeMap<Integer,host> hosts = new TreeMap<Integer,host>();
-	
+	private ConnectivityMatrix<Boolean> link;
 	public static void main(String[] args) {
 	    JFrame window;
 	    window = new JFrame("host");  // The parameter shows in the window title bar.
@@ -69,6 +71,8 @@ public class Visual extends JPanel {
 	void setNumberHost(int n){
 		
 		n_host = n;
+		ConnectivityMatrix<Boolean> link = new ConnectivityMatrix<Boolean>(
+					Boolean.class, n_host, false, false);
 		double r = Math.min(width,height)/2;
 		double d = r/6;
 		r = r - d/2 - 10;
@@ -86,17 +90,20 @@ public class Visual extends JPanel {
 
 	
 	class host {
-		int id;
-		double x;
-		double y;
-		double dim;
+		private int id;
+		private double x;
+		private double y;
+		private double dim;
     	Color c = Color.BLACK;
 		host(int i,double x,double y,double d){
 			this.x = x;
 			this.y = y;
 			id = i;
-			dim = d;
+			dim =  d;
 			Color c = Color.BLACK;
+		}
+		double  getDim() {
+			return dim;
 		}
 		
 		int getid(){
@@ -106,6 +113,12 @@ public class Visual extends JPanel {
 		void setColor(Color n) {
 	       	c = n;
 	    }
+		double getX() {
+			return x;
+		}
+		double getY() {
+			return y;
+		}
 		
 	   void paint(Graphics2D g2) {
 		   
@@ -139,8 +152,30 @@ public class Visual extends JPanel {
 	       // Draw the String
 	       g.drawString(text, x, y);
 	   }
-		
+	 	
 	}
+	
+	public void loadLink (ConnectivityMatrix<Boolean> cm) {
+		   link = cm;
+	 }
+	
+	private void drawLink(Graphics g) {
+		   Graphics2D g2 = (Graphics2D)g;
+		   double x;
+		   double y;
+		   double d = 0;
+		   if(n_host > 0) {d = hosts.get(0).getDim();}
+		   g2.setPaint(Color.BLACK);
+		   for (int i = 0; i < n_host; i++) {
+				for (int j = i + 1; j < n_host && j != i; j++) {
+					
+					if(link.get(i,j)) {
+					   g2.draw( new Line2D.Double( (hosts.get(i).getX() + d/2),(hosts.get(i).getY() + d/2),
+							   					   (hosts.get(j).getX() + d/2),(hosts.get(j).getY() + d/2)));
+					}
+				}
+			}
+	 }
 	
    protected void paintComponent(Graphics g) {
 	   super.paintComponent(g);
@@ -154,9 +189,12 @@ public class Visual extends JPanel {
 	   g2.setPaint(Color.WHITE);
 	   g2.fill(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
 	   
+	   if(link != null) {drawLink(g);};
+	   
 	   for (int i = 0; i < n_host; i++) {
 		   hosts.get(i).paint(g2);
 	   }
+	   
 	   g2.setPaint(Color.BLACK);
 	   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
    }
