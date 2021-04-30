@@ -711,18 +711,25 @@ definitions:
 	/* START PAR */
 			rule r_MemoryManager =
 			par
-			isLinked(host1,host2):=true
-			isLinked(host2,host1):=true
+			isLinked(host1,host3):=true
+			isLinked(host3,host1):=true
 			isLinked(host1,host5):=true
 			isLinked(host5,host1):=true
-			isLinked(host2,host5):=true
-			isLinked(host5,host2):=true
-			isLinked(host3,host4):=true
-			isLinked(host4,host3):=true
+
+			curSeqNum(host2):=1
+			lastKnownDestSeqNum(host2,host3):=undef
+			localReqCount(host2):=1
+			receivedReq(host2):=[(1,host2)]
+			waitingForRouteTo(host2,host3):=true
+			waitingForRouteToTmp(host2,host3):=5
 
 
-
-
+			extend Message with $_message1 do
+				par
+									isConsumed(host3,$_message1):=false
+					messageRREQ($_message1):=(host2,1,0,host3,undef,1,host2)
+					messageType($_message1):=RREQ
+				endpar
 	/* END PAR */
 			endpar
 

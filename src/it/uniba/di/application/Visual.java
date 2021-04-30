@@ -74,8 +74,8 @@ public class Visual extends JPanel {
 		ConnectivityMatrix<Boolean> link = new ConnectivityMatrix<Boolean>(
 					Boolean.class, n_host, false, false);
 		double r = Math.min(width,height)/2;
-		double d = r/6;
-		r = r - d/2 - 10;
+		double d = 30;
+		r = r - d/2;
 		double xcenter  = (width/2);
 		double ycenter = (height/2);
 		for(int i = 0; i < n_host; i++) { // number vertex is the number of host
@@ -129,7 +129,7 @@ public class Visual extends JPanel {
 		    
 	        //MODIFICARE IL FONT DEI NUMERI ALL'INTERNO DEGLI HOST
 	        g2.setPaint(Color.BLACK);
-	        drawCenteredString(g2,Integer.toString(id),new Ellipse2D.Double(x,y,dim,dim) , g2.getFont());    
+	        drawCenteredString(g2,Integer.toString(id + 1),new Ellipse2D.Double(x,y,dim,dim) , g2.getFont());    
 	   }
 	   /**
 	    * Draw a String centered in the middle of a Rectangle.

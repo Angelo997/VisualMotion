@@ -27,7 +27,7 @@ public class MobilityModel {
 				if (local_probability < probability) {
 					sb.append(AODVParser.TAB_3 + "isLinked(host" + (i + 1) + ",host" + (j + 1) + "):=true\n");
 					sb.append(AODVParser.TAB_3 + "isLinked(host" + (j + 1) + ",host" + (i + 1) + "):=true\n");
-					connectivityMatrix.insert(i, j, true);
+					connectivityMatrix.insert(i, j, true); // cambio di valore dei link
 				}
 			}
 		}
@@ -50,7 +50,7 @@ public class MobilityModel {
 			for (int j = i + 1; j < hostNumber && j != i; j++) {
 				int local_probability = ThreadLocalRandom.current().nextInt(0, 100);
 				if (local_probability < probability) {
-					boolean value = !connectivityMatrix.get(i, j);
+					boolean value = !connectivityMatrix.get(i, j); // cambio di valore dei link
 					connectivityMatrix.insert(i, j, value);
 				}
 				if (connectivityMatrix.get(i, j)) {

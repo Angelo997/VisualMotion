@@ -611,16 +611,84 @@ definitions:
 	/* START PAR */
 			rule r_MemoryManager =
 			par
+			isLinked(host1,host4):=true
+			isLinked(host4,host1):=true
+			isLinked(host1,host5):=true
+			isLinked(host5,host1):=true
+			isLinked(host2,host3):=true
+			isLinked(host3,host2):=true
 			isLinked(host2,host5):=true
 			isLinked(host5,host2):=true
+			isLinked(host3,host4):=true
+			isLinked(host4,host3):=true
 			isLinked(host3,host5):=true
 			isLinked(host5,host3):=true
 			isLinked(host4,host5):=true
 			isLinked(host5,host4):=true
 
+			curSeqNum(host1):=1
+			curSeqNum(host2):=1
+			curSeqNum(host5):=1
+			lastKnownDestSeqNum(host1,host3):=undef
+			lastKnownDestSeqNum(host1,host4):=undef
+			lastKnownDestSeqNum(host1,host5):=undef
+			lastKnownDestSeqNum(host2,host4):=undef
+			lastKnownDestSeqNum(host2,host5):=undef
+			lastKnownDestSeqNum(host5,host3):=undef
+			lastKnownDestSeqNum(host5,host4):=undef
+			localReqCount(host1):=1
+			localReqCount(host2):=1
+			localReqCount(host5):=1
+			receivedReq(host1):=[(1,host1)]
+			receivedReq(host2):=[(1,host2)]
+			receivedReq(host5):=[(1,host5),(1,host2)]
+			waitingForRouteTo(host1,host3):=true
+			waitingForRouteTo(host1,host4):=true
+			waitingForRouteTo(host1,host5):=true
+			waitingForRouteTo(host2,host4):=true
+			waitingForRouteTo(host2,host5):=true
+			waitingForRouteTo(host5,host3):=true
+			waitingForRouteToTmp(host1,host3):=4
+			waitingForRouteToTmp(host1,host4):=4
+			waitingForRouteToTmp(host1,host5):=4
+			waitingForRouteToTmp(host2,host4):=3
+			waitingForRouteToTmp(host2,host5):=3
+			waitingForRouteToTmp(host5,host3):=4
 
-
-
+			extend RoutingTable with $_rt1 do
+				par
+									active($_rt1):=true
+					entry($_rt1):=(host2,1,1,host2)
+					entryFor(host5):=undef
+					owner($_rt1):=host5
+					precursor($_rt1):=[]
+				endpar
+			extend Message with $_message1,$_message2,$_message3,$_message4,$_message5,$_message6,$_message7 do
+				par
+									isConsumed(host2,$_message3):=false
+					isConsumed(host2,$_message4):=false
+					isConsumed(host4,$_message3):=false
+					isConsumed(host4,$_message4):=false
+					isConsumed(host4,$_message5):=false
+					isConsumed(host4,$_message6):=false
+					isConsumed(host4,$_message7):=false
+					isConsumed(host5,$_message1):=true
+					isConsumed(host5,$_message2):=true
+					messageRREQ($_message1):=(host2,1,0,host5,undef,1,host2)
+					messageRREQ($_message2):=(host2,1,0,host4,undef,1,host2)
+					messageRREQ($_message3):=(host5,1,0,host3,undef,1,host5)
+					messageRREQ($_message4):=(host2,1,1,host4,undef,1,host5)
+					messageRREQ($_message5):=(host1,1,0,host5,undef,1,host1)
+					messageRREQ($_message6):=(host1,1,0,host4,undef,1,host1)
+					messageRREQ($_message7):=(host1,1,0,host3,undef,1,host1)
+					messageType($_message1):=RREQ
+					messageType($_message2):=RREQ
+					messageType($_message3):=RREQ
+					messageType($_message4):=RREQ
+					messageType($_message5):=RREQ
+					messageType($_message6):=RREQ
+					messageType($_message7):=RREQ
+				endpar
 	/* END PAR */
 			endpar
 

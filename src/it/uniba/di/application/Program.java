@@ -211,7 +211,7 @@ public class Program extends Utility {
 
 		x = frameALA.getWidth();
 		y = frameALA.getHeight();
-		scrollPne.setBounds(x/2 + 25,y/2 - 75,x/2 - 50 , 181);
+		scrollPne.setBounds(x/2 + 25 ,y*3/4,x/2 - 50, y/4 - 40);
 		scrollPne.setVisible(true);
 		scrollPne.setAutoscrolls(true);
 		frameALA.getContentPane().add(scrollPne);
@@ -222,9 +222,9 @@ public class Program extends Utility {
 		
 		x = frameALA.getWidth();
 		y = frameALA.getHeight();
-		Visual Gs = new Visual(x/2 - 50 , y/2 - 100);
+		Visual Gs = new Visual(x/2 - 50 , y*3/4 - 20);
 		//Gs.setForeground(Color.BLACK);
-	    Gs.setBounds(x/2 + 25, 10, x/2 - 50 , y/2 - 100);
+	    Gs.setBounds(x/2 + 25, 10, x/2 - 50 , y*3/4 - 20);
 		frameALA.getContentPane().add(Gs);
 		
 		startButton.addMouseListener(new MouseAdapter() {
@@ -405,9 +405,6 @@ public class Program extends Utility {
 											}
 											Gs.loadLink(connectivityMatrix);
 											Gs.repaint();
-											
-											
-											//addlink
 											
 										}
 										debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "

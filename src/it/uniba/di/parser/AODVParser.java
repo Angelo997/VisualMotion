@@ -22,6 +22,7 @@ import it.uniba.di.support.structures.ConnectivityMatrix;
  * @author Marco Pinto
  */
 public class AODVParser extends Utility {
+	//private static HashMap<String, List<>> metricsMap = new HashMap<>();
 	private static HashMap<String, Integer> metricsMap = new HashMap<>();
 	private static List<String> uniqueMessage = new ArrayList<>();
 	private static List<String> uniqueRoutingTables = new ArrayList<>();
@@ -326,6 +327,7 @@ public class AODVParser extends Utility {
 			while ((line = br.readLine()) != null) {
 				if (finalState) {
 					if (line.contains(RT_UPDATE)) {
+						//System.out.println(line); // TO COMMENT
 						Integer rt_update = Integer.valueOf(line.substring(line.indexOf('=') + 1));
 						metricsMap.put(RT_UPDATE, metricsMap.get(RT_UPDATE) + rt_update);
 					}
@@ -357,11 +359,14 @@ public class AODVParser extends Utility {
 					}
 
 					if (line.startsWith(CA_SUCCESS) || line.startsWith(CA_FAILURE)) {
+						
+						
 						String identifier = line.substring(line.indexOf('_') + 1, line.indexOf('('));
+						String host = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
 						String metric = "";
-
+						
 						switch (identifier) {
-						case "success":
+						case "success":							
 							metric = CA_SUCCESS;
 							break;
 						case "failure":
@@ -385,6 +390,7 @@ public class AODVParser extends Utility {
 					}
 
 					if (line.contains("entry(")) {
+						//System.out.println(line); //TO COMMENT
 						metricsMap.put(RT_SIZE, metricsMap.get(RT_SIZE) + 1);
 
 					}
@@ -456,4 +462,87 @@ public class AODVParser extends Utility {
 	public void revertMetrics(HashMap<String, Integer> metrics) {
 		metricsMap = metrics;
 	}
+/*
+	public void getConnection(String outputFile) throws IOException{
+		boolean finalState = false;
+		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (finalState) {
+					if (line.contains(RT_UPDATE)) {
+						//System.out.println(line); // TO COMMENT
+						
+					}
+
+					if (line.startsWith("rreq_update") || line.startsWith("rrep_update")
+							|| line.startsWith("rerr_update")) {
+
+						String identifier = line.substring(0, line.indexOf('_'));
+						String metric = "";
+
+						switch (identifier) {
+						case "rerr":
+							metric = INST_RERR;
+							break;
+						case "rreq":
+							metric = INST_RREQ;
+							break;
+						case "rrep":
+							metric = INST_RREP;
+							break;
+						default:
+							break;
+						}
+						if (!metric.isEmpty()) {
+							
+						}
+					}
+
+					if (line.startsWith(CA_SUCCESS) || line.startsWith(CA_FAILURE)) {
+						
+						
+						String identifier = line.substring(line.indexOf('_') + 1, line.indexOf('('));
+						String host = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
+						String metric = "";
+						
+						
+						
+						switch (identifier) {
+						case "success":				
+							metric = CA_SUCCESS;
+							break;
+						case "failure":
+							metric = CA_FAILURE;
+							break;
+						default:
+							break;
+						}
+						if (metric != null) {
+							String from = host.substring(4,5);
+							String to = host .substring(10);
+							System.out.println("from " + from + " to " + to); //TO COMMENT
+						}
+					}
+
+					if (line.startsWith(CA_TOT)) {
+						
+
+					}
+
+					if (line.contains("entry(")) {
+						
+					}
+				}
+
+				if (line.toLowerCase().contains("final state")) {
+					finalState = true;
+				}
+
+			}
+		} catch (IOException ex) {
+			displayInfo("ERROR: Problem reading file (AODVParser.parser)");
+			error(ex);
+		}
+	}
+	*/
 }
