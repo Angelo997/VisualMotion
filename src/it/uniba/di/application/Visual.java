@@ -24,6 +24,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.event.MouseMotionAdapter;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -36,9 +37,11 @@ public class Visual extends JPanel {
 	private double width; 
 	private double height;
 	
-	private int n_host = 0;		
-	private TreeMap<Integer,host> hosts = new TreeMap<Integer,host>();
+	private int n_host = 0;
+	private HashMap<Integer,host> hosts; //tempo di ritrovamento degli elementi costante
+	private HashMap<Integer,host> Connection; // = new TreeMap<Integer,host>();
 	private ConnectivityMatrix<Boolean> link;
+
 	public static void main(String[] args) {
 	    JFrame window;
 	    window = new JFrame("host");  // The parameter shows in the window title bar.
@@ -68,9 +71,9 @@ public class Visual extends JPanel {
 		
 	}
 	
-	void setNumberHost(int n){
-		
+	public void setNumberHost(int n){
 		n_host = n;
+		hosts = new HashMap(n); //imposta la capacità iniziale a n e il loadfactor (percentuale prima di reallocare la memoria) al 75%
 		ConnectivityMatrix<Boolean> link = new ConnectivityMatrix<Boolean>(
 					Boolean.class, n_host, false, false);
 		double r = Math.min(width,height)/2;

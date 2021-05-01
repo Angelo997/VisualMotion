@@ -462,51 +462,18 @@ public class AODVParser extends Utility {
 	public void revertMetrics(HashMap<String, Integer> metrics) {
 		metricsMap = metrics;
 	}
-/*
+
 	public void getConnection(String outputFile) throws IOException{
 		boolean finalState = false;
 		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
 			String line;
 			while ((line = br.readLine()) != null) {
 				if (finalState) {
-					if (line.contains(RT_UPDATE)) {
-						//System.out.println(line); // TO COMMENT
-						
-					}
-
-					if (line.startsWith("rreq_update") || line.startsWith("rrep_update")
-							|| line.startsWith("rerr_update")) {
-
-						String identifier = line.substring(0, line.indexOf('_'));
-						String metric = "";
-
-						switch (identifier) {
-						case "rerr":
-							metric = INST_RERR;
-							break;
-						case "rreq":
-							metric = INST_RREQ;
-							break;
-						case "rrep":
-							metric = INST_RREP;
-							break;
-						default:
-							break;
-						}
-						if (!metric.isEmpty()) {
-							
-						}
-					}
-
 					if (line.startsWith(CA_SUCCESS) || line.startsWith(CA_FAILURE)) {
-						
-						
 						String identifier = line.substring(line.indexOf('_') + 1, line.indexOf('('));
 						String host = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
 						String metric = "";
-						
-						
-						
+
 						switch (identifier) {
 						case "success":				
 							metric = CA_SUCCESS;
@@ -519,18 +486,13 @@ public class AODVParser extends Utility {
 						}
 						if (metric != null) {
 							String from = host.substring(4,5);
-							String to = host .substring(10);
+							String to = host.substring(10);
 							System.out.println("from " + from + " to " + to); //TO COMMENT
 						}
 					}
 
 					if (line.startsWith(CA_TOT)) {
-						
-
-					}
-
-					if (line.contains("entry(")) {
-						
+						Integer ca_value = Integer.valueOf(line.substring(line.indexOf('=') + 1));
 					}
 				}
 
@@ -544,5 +506,4 @@ public class AODVParser extends Utility {
 			error(ex);
 		}
 	}
-	*/
 }
