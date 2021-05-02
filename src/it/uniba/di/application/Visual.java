@@ -21,11 +21,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.event.MouseMotionAdapter;
 import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.ThreadLocalRandom;
 
 import it.uniba.di.parser.AODVParser;
@@ -39,8 +42,11 @@ public class Visual extends JPanel {
 	
 	private int n_host = 0;
 	private HashMap<Integer,host> hosts; //tempo di ritrovamento degli elementi costante
-	private HashMap<Integer,host> Connection; // = new TreeMap<Integer,host>();
+	private HashMap<Integer,List<Integer>> success_ca; // = new TreeMap<Integer,host>();
+	private HashMap<Integer,List<Integer>> fail_ca; // = new TreeMap<Integer,host>();
 	private ConnectivityMatrix<Boolean> link;
+	private Color color_ca = Color.BLACK;
+
 
 	public static void main(String[] args) {
 	    JFrame window;
@@ -74,8 +80,10 @@ public class Visual extends JPanel {
 	public void setNumberHost(int n){
 		n_host = n;
 		hosts = new HashMap(n); //imposta la capacità iniziale a n e il loadfactor (percentuale prima di reallocare la memoria) al 75%
+		/*
 		ConnectivityMatrix<Boolean> link = new ConnectivityMatrix<Boolean>(
 					Boolean.class, n_host, false, false);
+					*/
 		double r = Math.min(width,height)/2;
 		double d = 30;
 		r = r - d/2;
@@ -92,11 +100,11 @@ public class Visual extends JPanel {
 	
 
 	
-	class host {
+	static class host {
 		private int id;
 		private double x;
 		private double y;
-		private double dim;
+		private static double dim;
     	Color c = Color.BLACK;
 		host(int i,double x,double y,double d){
 			this.x = x;
@@ -105,7 +113,7 @@ public class Visual extends JPanel {
 			dim =  d;
 			Color c = Color.BLACK;
 		}
-		double  getDim() {
+		static double getDim() {
 			return dim;
 		}
 		
@@ -126,10 +134,10 @@ public class Visual extends JPanel {
 	   void paint(Graphics2D g2) {
 		   
 		    g2.setPaint(Color.WHITE);
-	        g2.fill( new Ellipse2D.Double(x,y,dim,dim) );
+	        g2.fill( new Ellipse2D.Double(x,y,dim,dim));
 		    g2.setPaint(Color.BLACK);
-		    g2.draw( new Ellipse2D.Double(x,y,dim,dim) );
-		    
+		    g2.draw( new Ellipse2D.Double(x,y,dim,dim));
+		   		    
 	        //MODIFICARE IL FONT DEI NUMERI ALL'INTERNO DEGLI HOST
 	        g2.setPaint(Color.BLACK);
 	        drawCenteredString(g2,Integer.toString(id + 1),new Ellipse2D.Double(x,y,dim,dim) , g2.getFont());    
@@ -158,20 +166,30 @@ public class Visual extends JPanel {
 	 	
 	}
 	
+	/*Questa scelta è stata fatta per non permettere di disegnare i link
+	 * al di fuori della funzione paint component*/
 	public void loadLink (ConnectivityMatrix<Boolean> cm) {
-		   link = cm;
+		   link = cm; //va fatta la deep copy
 	 }
+	
+	public void loadConnection (HashMap<Integer,List<Integer>> success,HashMap<Integer,List<Integer>> failed) {
+		   success_ca = success;
+		   fail_ca = failed;
+	}
+	
+	public void color_ca (Color c) {
+		 color_ca = c;
+	}
 	
 	private void drawLink(Graphics g) {
 		   Graphics2D g2 = (Graphics2D)g;
 		   double x;
 		   double y;
-		   double d = 0;
-		   if(n_host > 0) {d = hosts.get(0).getDim();}
+		   double d = host.dim;
 		   g2.setPaint(Color.BLACK);
+		 //aggiungere un controllo se link è null
 		   for (int i = 0; i < n_host; i++) {
 				for (int j = i + 1; j < n_host && j != i; j++) {
-					
 					if(link.get(i,j)) {
 					   g2.draw( new Line2D.Double( (hosts.get(i).getX() + d/2),(hosts.get(i).getY() + d/2),
 							   					   (hosts.get(j).getX() + d/2),(hosts.get(j).getY() + d/2)));
@@ -179,20 +197,58 @@ public class Visual extends JPanel {
 				}
 			}
 	 }
+
+	private void drawConnection(Graphics g, HashMap <Integer, List<Integer>> connection) {
+		Graphics2D g2 = (Graphics2D) g;
+		double x1;
+		double x2;
+		double y1;
+		double y2;
+		double d = host.dim;
+		g2.setPaint(color_ca);
+		for(int i = 0; i < n_host; i++) {
+			int id = i + 1;  
+			List<Integer> Ca = connection.get(id);
+			if(Ca != null) {
+				//carica le coordinate del host da cui parte la connessione
+				x1 = hosts.get(i).getX();
+				y1 = hosts.get(i).getY();
+				ListIterator<Integer> il = Ca.listIterator();
+				while(il.hasNext()) {
+					//carica le coordinate del host a cui arriva la connessione
+					int host_to = il.next();
+					x2 = hosts.get(host_to - 1).getX();
+					y2 = hosts.get(host_to - 1).getY();
+					//disegna la linea
+					g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER)); // g2 is an instance of Graphics2D
+					g2.draw(new Line2D.Double(x1 + d/2,y1 + d/2,x2 + d/2,y2 + d/2));
+				}
+				    g2.setStroke(new BasicStroke(1)); //reimposta lo spessore della linea a 1
+			}
+		}
+	}
+	
 	
    protected void paintComponent(Graphics g) {
 	   super.paintComponent(g);
 	   Graphics2D g2 = (Graphics2D)g;
 	   
-	   //abilita antialiasing
+	   //abilità antialiasing
 	   g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 			   RenderingHints.VALUE_ANTIALIAS_ON);
 	   
 	 
 	   g2.setPaint(Color.WHITE);
-	   g2.fill(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
+	   g2.fill(new Rectangle(0, 0,getWidth() - 1,getHeight() - 1));
+	   
 	   
 	   if(link != null) {drawLink(g);};
+	   color_ca(Color.GREEN);
+	   if(success_ca != null) {color_ca(Color.GREEN);drawConnection(g,success_ca);}
+	   color_ca(Color.RED);
+	   if(fail_ca != null) {color_ca(Color.RED);drawConnection(g,fail_ca);}
+	   
+	   
 	   
 	   for (int i = 0; i < n_host; i++) {
 		   hosts.get(i).paint(g2);
@@ -201,6 +257,7 @@ public class Visual extends JPanel {
 	   g2.setPaint(Color.BLACK);
 	   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
    }
+
  
 	    
 }

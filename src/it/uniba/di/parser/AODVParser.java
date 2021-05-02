@@ -21,8 +21,10 @@ import it.uniba.di.support.structures.ConnectivityMatrix;
  *
  * @author Marco Pinto
  */
+
 public class AODVParser extends Utility {
-	//private static HashMap<String, List<>> metricsMap = new HashMap<>();
+	private static HashMap<Integer,List<Integer>> success_ca = null;
+	private static HashMap<Integer,List<Integer>> fail_ca = null;
 	private static HashMap<String, Integer> metricsMap = new HashMap<>();
 	private static List<String> uniqueMessage = new ArrayList<>();
 	private static List<String> uniqueRoutingTables = new ArrayList<>();
@@ -319,7 +321,8 @@ public class AODVParser extends Utility {
 		metricsMap.put(INST_RERR, 0);
 		metricsMap.put(RT_UPDATE, 0);
 		metricsMap.put(RT_SIZE, 0);
-
+		success_ca = null; //resetta la lista delle connessioni
+		fail_ca = null;
 		boolean finalState = false;
 
 		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
@@ -330,6 +333,10 @@ public class AODVParser extends Utility {
 						//System.out.println(line); // TO COMMENT
 						Integer rt_update = Integer.valueOf(line.substring(line.indexOf('=') + 1));
 						metricsMap.put(RT_UPDATE, metricsMap.get(RT_UPDATE) + rt_update);
+					}
+					
+					if (line.startsWith("isLinked")){
+						System.out.println(line);
 					}
 
 					if (line.startsWith("rreq_update") || line.startsWith("rrep_update")
@@ -359,18 +366,38 @@ public class AODVParser extends Utility {
 					}
 
 					if (line.startsWith(CA_SUCCESS) || line.startsWith(CA_FAILURE)) {
-						
-						
+						System.out.println(line);
 						String identifier = line.substring(line.indexOf('_') + 1, line.indexOf('('));
 						String host = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
 						String metric = "";
 						
+						int from = -1;
+						int to = -1;
 						switch (identifier) {
-						case "success":							
+						case "success":
+							if(success_ca == null) {success_ca = new HashMap<Integer,List<Integer>>();}//alloca la memoria solo se necessario
 							metric = CA_SUCCESS;
+							from = Integer.parseInt(host.substring(4,5));
+							to = Integer.parseInt(host .substring(10));
+							if(success_ca.get(from) == null) {
+								success_ca.put(from, new ArrayList<Integer>() );
+								success_ca.get(from).add(to);
+							}else {
+								success_ca.get(from).add(to);
+							}
+
 							break;
 						case "failure":
+							if(fail_ca == null) {fail_ca = new HashMap<Integer,List<Integer>>();} 
 							metric = CA_FAILURE;
+						    from = Integer.parseInt(host.substring(4,5));
+							to = Integer.parseInt(host .substring(10));
+							if(fail_ca.get(from) == null) {
+								fail_ca.put(from, new ArrayList<Integer>() );
+								fail_ca.get(from).add(to);
+							}else {
+								fail_ca.get(from).add(to);
+							}
 							break;
 						default:
 							break;
@@ -379,7 +406,7 @@ public class AODVParser extends Utility {
 							Integer ca_value = Integer.valueOf(line.substring(line.indexOf('=') + 1));
 							metricsMap.put(metric, metricsMap.get(metric) + ca_value);
 							metricsMap.put(CA_COMPLETED, metricsMap.get(CA_COMPLETED) + ca_value);
-
+							
 						}
 					}
 
@@ -407,7 +434,15 @@ public class AODVParser extends Utility {
 		}
 		return metricsMap;
 	}
-
+	
+	//restituisce null se nessun tentativo di connessione è avvenuto con successo
+	public static HashMap<Integer,List<Integer>> getSuccess_ca(){
+		return success_ca;
+	}
+	//restituisce null se nessun tentativo di connessione è avvenuto con fallimento
+    public static HashMap<Integer,List<Integer>> getFail_ca(){
+			return fail_ca;
+	}
 	// Funzioni di supporto
 
 	/**
@@ -461,49 +496,5 @@ public class AODVParser extends Utility {
 	 */
 	public void revertMetrics(HashMap<String, Integer> metrics) {
 		metricsMap = metrics;
-	}
-
-	public void getConnection(String outputFile) throws IOException{
-		boolean finalState = false;
-		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
-			String line;
-			while ((line = br.readLine()) != null) {
-				if (finalState) {
-					if (line.startsWith(CA_SUCCESS) || line.startsWith(CA_FAILURE)) {
-						String identifier = line.substring(line.indexOf('_') + 1, line.indexOf('('));
-						String host = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
-						String metric = "";
-
-						switch (identifier) {
-						case "success":				
-							metric = CA_SUCCESS;
-							break;
-						case "failure":
-							metric = CA_FAILURE;
-							break;
-						default:
-							break;
-						}
-						if (metric != null) {
-							String from = host.substring(4,5);
-							String to = host.substring(10);
-							System.out.println("from " + from + " to " + to); //TO COMMENT
-						}
-					}
-
-					if (line.startsWith(CA_TOT)) {
-						Integer ca_value = Integer.valueOf(line.substring(line.indexOf('=') + 1));
-					}
-				}
-
-				if (line.toLowerCase().contains("final state")) {
-					finalState = true;
-				}
-
-			}
-		} catch (IOException ex) {
-			displayInfo("ERROR: Problem reading file (AODVParser.parser)");
-			error(ex);
-		}
 	}
 }

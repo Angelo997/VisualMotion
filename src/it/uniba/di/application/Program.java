@@ -358,9 +358,13 @@ public class Program extends Utility {
 										}
 										if (isSimulationOk) {
 											HashMap<String, Integer> metrics = null;
+											HashMap<Integer, List<Integer>> success_ca = null;
+											HashMap<Integer, List<Integer>> fail_ca = null;
 											switch (selectedProtocol) {
 											case "AODV":
 												metrics = aodvParser.parser(simulationDir + "\\logs\\out.txt");
+												success_ca = aodvParser.getSuccess_ca();
+												fail_ca = aodvParser.getFail_ca();
 												if (moveCounter > 1 && Integer
 														.valueOf(metrics.get(AODVParser.RT_SIZE)) < metricsList
 																.get(metricsList.size() - 1).get(AODVParser.RT_SIZE)) {
@@ -404,7 +408,13 @@ public class Program extends Utility {
 												break;
 											}
 											Gs.loadLink(connectivityMatrix);
+											Gs.loadConnection(success_ca,fail_ca);
 											Gs.repaint();
+											/*
+											Gs.color_ca(Color.RED);
+											Gs.loadConnection(fail_ca);
+											Gs.repaint();
+											*/
 											
 										}
 										debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "
@@ -437,7 +447,6 @@ public class Program extends Utility {
 							}
 						}
 					}
-
 				}).start();
 			}
 		});
