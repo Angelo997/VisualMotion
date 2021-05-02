@@ -368,7 +368,8 @@ public class AODVParser extends Utility {
 					if (line.startsWith(CA_SUCCESS) || line.startsWith(CA_FAILURE)) {
 						System.out.println(line);
 						String identifier = line.substring(line.indexOf('_') + 1, line.indexOf('('));
-						String host = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
+						String host_s = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
+						String[] hosts;
 						String metric = "";
 						
 						int from = -1;
@@ -377,8 +378,10 @@ public class AODVParser extends Utility {
 						case "success":
 							if(success_ca == null) {success_ca = new HashMap<Integer,List<Integer>>();}//alloca la memoria solo se necessario
 							metric = CA_SUCCESS;
-							from = Integer.parseInt(host.substring(4,5));
-							to = Integer.parseInt(host .substring(10));
+							host_s = host_s.replace("host","");
+							hosts = host_s.split(",");
+							from = Integer.parseInt(hosts[0]);
+							to = Integer.parseInt(hosts[1]);
 							if(success_ca.get(from) == null) {
 								success_ca.put(from, new ArrayList<Integer>() );
 								success_ca.get(from).add(to);
@@ -390,8 +393,10 @@ public class AODVParser extends Utility {
 						case "failure":
 							if(fail_ca == null) {fail_ca = new HashMap<Integer,List<Integer>>();} 
 							metric = CA_FAILURE;
-						    from = Integer.parseInt(host.substring(4,5));
-							to = Integer.parseInt(host .substring(10));
+							host_s = host_s.replace("host","");
+							hosts = host_s.split(",");
+							from = Integer.parseInt(hosts[0]);
+							to = Integer.parseInt(hosts[1]);
 							if(fail_ca.get(from) == null) {
 								fail_ca.put(from, new ArrayList<Integer>() );
 								fail_ca.get(from).add(to);

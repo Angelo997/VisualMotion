@@ -86,7 +86,7 @@ public class Visual extends JPanel {
 					*/
 		double r = Math.min(width,height)/2;
 		double d = 30;
-		r = r - d/2;
+		r = r - d/2 - 5;
 		double xcenter  = (width/2);
 		double ycenter = (height/2);
 		for(int i = 0; i < n_host; i++) { // number vertex is the number of host
