@@ -42,6 +42,8 @@ signature:
 	static host3: Agent
 	static host4: Agent
 	static host5: Agent
+	static host6: Agent
+	static host7: Agent
 	
 	derived dest: Message -> Agent	
 	derived destSeqNum: Message -> Integer	
@@ -422,7 +424,7 @@ definitions:
 									par
 										r_GenerateRouteReq[$dest]
 										waitingForRouteTo(self, $dest) := true
-										waitingForRouteToTmp(self,$dest) := 5
+										waitingForRouteToTmp(self,$dest) := 4
 									endpar									
 								endif
 							endif
@@ -711,24 +713,201 @@ definitions:
 	/* START PAR */
 			rule r_MemoryManager =
 			par
+			isLinked(host1,host2):=true
+			isLinked(host2,host1):=true
 			isLinked(host1,host3):=true
 			isLinked(host3,host1):=true
+			isLinked(host1,host4):=true
+			isLinked(host4,host1):=true
 			isLinked(host1,host5):=true
 			isLinked(host5,host1):=true
+			isLinked(host1,host6):=true
+			isLinked(host6,host1):=true
+			isLinked(host2,host4):=true
+			isLinked(host4,host2):=true
+			isLinked(host2,host5):=true
+			isLinked(host5,host2):=true
+			isLinked(host2,host7):=true
+			isLinked(host7,host2):=true
+			isLinked(host3,host4):=true
+			isLinked(host4,host3):=true
+			isLinked(host3,host6):=true
+			isLinked(host6,host3):=true
+			isLinked(host4,host6):=true
+			isLinked(host6,host4):=true
+			isLinked(host5,host6):=true
+			isLinked(host6,host5):=true
+			isLinked(host5,host7):=true
+			isLinked(host7,host5):=true
+			isLinked(host6,host7):=true
+			isLinked(host7,host6):=true
 
+			curSeqNum(host1):=1
 			curSeqNum(host2):=1
+			curSeqNum(host3):=1
+			curSeqNum(host4):=1
+			curSeqNum(host5):=1
+			curSeqNum(host6):=1
+			curSeqNum(host7):=1
+			lastKnownDestSeqNum(host1,host3):=undef
+			lastKnownDestSeqNum(host1,host4):=undef
+			lastKnownDestSeqNum(host1,host6):=undef
+			lastKnownDestSeqNum(host2,host1):=undef
 			lastKnownDestSeqNum(host2,host3):=undef
+			lastKnownDestSeqNum(host2,host4):=undef
+			lastKnownDestSeqNum(host2,host5):=undef
+			lastKnownDestSeqNum(host2,host7):=undef
+			lastKnownDestSeqNum(host3,host1):=undef
+			lastKnownDestSeqNum(host3,host4):=undef
+			lastKnownDestSeqNum(host3,host7):=undef
+			lastKnownDestSeqNum(host4,host1):=undef
+			lastKnownDestSeqNum(host4,host2):=undef
+			lastKnownDestSeqNum(host4,host3):=undef
+			lastKnownDestSeqNum(host4,host5):=undef
+			lastKnownDestSeqNum(host5,host1):=undef
+			lastKnownDestSeqNum(host5,host2):=undef
+			lastKnownDestSeqNum(host5,host4):=undef
+			lastKnownDestSeqNum(host5,host6):=undef
+			lastKnownDestSeqNum(host5,host7):=undef
+			lastKnownDestSeqNum(host6,host3):=undef
+			lastKnownDestSeqNum(host6,host7):=undef
+			lastKnownDestSeqNum(host7,host2):=undef
+			lastKnownDestSeqNum(host7,host5):=undef
+			localReqCount(host1):=1
 			localReqCount(host2):=1
+			localReqCount(host3):=1
+			localReqCount(host4):=1
+			localReqCount(host5):=1
+			localReqCount(host6):=1
+			localReqCount(host7):=1
+			receivedReq(host1):=[(1,host1)]
 			receivedReq(host2):=[(1,host2)]
+			receivedReq(host3):=[(1,host3)]
+			receivedReq(host4):=[(1,host4)]
+			receivedReq(host5):=[(1,host5)]
+			receivedReq(host6):=[(1,host6)]
+			receivedReq(host7):=[(1,host7)]
+			waitingForRouteTo(host1,host3):=true
+			waitingForRouteTo(host1,host4):=true
+			waitingForRouteTo(host1,host6):=true
+			waitingForRouteTo(host2,host1):=true
 			waitingForRouteTo(host2,host3):=true
-			waitingForRouteToTmp(host2,host3):=5
+			waitingForRouteTo(host2,host4):=true
+			waitingForRouteTo(host2,host5):=true
+			waitingForRouteTo(host2,host7):=true
+			waitingForRouteTo(host3,host1):=true
+			waitingForRouteTo(host3,host4):=true
+			waitingForRouteTo(host3,host7):=true
+			waitingForRouteTo(host4,host1):=true
+			waitingForRouteTo(host4,host2):=true
+			waitingForRouteTo(host4,host3):=true
+			waitingForRouteTo(host4,host5):=true
+			waitingForRouteTo(host5,host1):=true
+			waitingForRouteTo(host5,host2):=true
+			waitingForRouteTo(host5,host4):=true
+			waitingForRouteTo(host5,host6):=true
+			waitingForRouteTo(host5,host7):=true
+			waitingForRouteTo(host6,host3):=true
+			waitingForRouteTo(host6,host7):=true
+			waitingForRouteTo(host7,host2):=true
+			waitingForRouteTo(host7,host5):=true
+			waitingForRouteToTmp(host1,host3):=4
+			waitingForRouteToTmp(host1,host4):=4
+			waitingForRouteToTmp(host1,host6):=4
+			waitingForRouteToTmp(host2,host1):=4
+			waitingForRouteToTmp(host2,host3):=4
+			waitingForRouteToTmp(host2,host4):=4
+			waitingForRouteToTmp(host2,host5):=4
+			waitingForRouteToTmp(host2,host7):=4
+			waitingForRouteToTmp(host3,host1):=4
+			waitingForRouteToTmp(host3,host4):=4
+			waitingForRouteToTmp(host3,host7):=4
+			waitingForRouteToTmp(host4,host1):=4
+			waitingForRouteToTmp(host4,host2):=4
+			waitingForRouteToTmp(host4,host3):=4
+			waitingForRouteToTmp(host4,host5):=4
+			waitingForRouteToTmp(host5,host1):=4
+			waitingForRouteToTmp(host5,host2):=4
+			waitingForRouteToTmp(host5,host4):=4
+			waitingForRouteToTmp(host5,host6):=4
+			waitingForRouteToTmp(host5,host7):=4
+			waitingForRouteToTmp(host6,host3):=4
+			waitingForRouteToTmp(host6,host7):=4
+			waitingForRouteToTmp(host7,host2):=4
+			waitingForRouteToTmp(host7,host5):=4
 
 
-			extend Message with $_message1 do
+			extend Message with $_message1,$_message2,$_message3,$_message4,$_message5,$_message6,$_message7,$_message8,$_message9,$_message10,$_message11,$_message12,$_message13,$_message14,$_message15,$_message16,$_message17,$_message18,$_message19,$_message20,$_message21,$_message22,$_message23,$_message24 do
 				par
-									isConsumed(host3,$_message1):=false
-					messageRREQ($_message1):=(host2,1,0,host3,undef,1,host2)
+									isConsumed(host1,$_message12):=false
+					isConsumed(host1,$_message13):=false
+					isConsumed(host1,$_message17):=false
+					isConsumed(host1,$_message18):=false
+					isConsumed(host1,$_message19):=false
+					isConsumed(host2,$_message1):=false
+					isConsumed(host2,$_message2):=false
+					isConsumed(host2,$_message3):=false
+					isConsumed(host2,$_message4):=false
+					isConsumed(host2,$_message5):=false
+					isConsumed(host3,$_message14):=false
+					isConsumed(host3,$_message15):=false
+					isConsumed(host3,$_message16):=false
+					isConsumed(host5,$_message20):=false
+					isConsumed(host5,$_message21):=false
+					isConsumed(host5,$_message22):=false
+					isConsumed(host5,$_message23):=false
+					isConsumed(host5,$_message24):=false
+					isConsumed(host6,$_message14):=false
+					isConsumed(host6,$_message15):=false
+					isConsumed(host6,$_message16):=false
+					messageRREQ($_message1):=(host5,1,0,host4,undef,1,host5)
+					messageRREQ($_message10):=(host7,1,0,host5,undef,1,host7)
+					messageRREQ($_message11):=(host7,1,0,host2,undef,1,host7)
+					messageRREQ($_message12):=(host6,1,0,host7,undef,1,host6)
+					messageRREQ($_message13):=(host6,1,0,host3,undef,1,host6)
+					messageRREQ($_message14):=(host1,1,0,host4,undef,1,host1)
+					messageRREQ($_message15):=(host1,1,0,host6,undef,1,host1)
+					messageRREQ($_message16):=(host1,1,0,host3,undef,1,host1)
+					messageRREQ($_message17):=(host3,1,0,host4,undef,1,host3)
+					messageRREQ($_message18):=(host3,1,0,host7,undef,1,host3)
+					messageRREQ($_message19):=(host3,1,0,host1,undef,1,host3)
+					messageRREQ($_message2):=(host5,1,0,host7,undef,1,host5)
+					messageRREQ($_message20):=(host2,1,0,host5,undef,1,host2)
+					messageRREQ($_message21):=(host2,1,0,host4,undef,1,host2)
+					messageRREQ($_message22):=(host2,1,0,host7,undef,1,host2)
+					messageRREQ($_message23):=(host2,1,0,host1,undef,1,host2)
+					messageRREQ($_message24):=(host2,1,0,host3,undef,1,host2)
+					messageRREQ($_message3):=(host5,1,0,host6,undef,1,host5)
+					messageRREQ($_message4):=(host5,1,0,host1,undef,1,host5)
+					messageRREQ($_message5):=(host5,1,0,host2,undef,1,host5)
+					messageRREQ($_message6):=(host4,1,0,host5,undef,1,host4)
+					messageRREQ($_message7):=(host4,1,0,host1,undef,1,host4)
+					messageRREQ($_message8):=(host4,1,0,host3,undef,1,host4)
+					messageRREQ($_message9):=(host4,1,0,host2,undef,1,host4)
 					messageType($_message1):=RREQ
+					messageType($_message10):=RREQ
+					messageType($_message11):=RREQ
+					messageType($_message12):=RREQ
+					messageType($_message13):=RREQ
+					messageType($_message14):=RREQ
+					messageType($_message15):=RREQ
+					messageType($_message16):=RREQ
+					messageType($_message17):=RREQ
+					messageType($_message18):=RREQ
+					messageType($_message19):=RREQ
+					messageType($_message2):=RREQ
+					messageType($_message20):=RREQ
+					messageType($_message21):=RREQ
+					messageType($_message22):=RREQ
+					messageType($_message23):=RREQ
+					messageType($_message24):=RREQ
+					messageType($_message3):=RREQ
+					messageType($_message4):=RREQ
+					messageType($_message5):=RREQ
+					messageType($_message6):=RREQ
+					messageType($_message7):=RREQ
+					messageType($_message8):=RREQ
+					messageType($_message9):=RREQ
 				endpar
 	/* END PAR */
 			endpar
@@ -747,7 +926,7 @@ definitions:
 					endif
 				endif
 			choose $c in {1..100} with true do 
-				if($c <= 20) then
+				if($c <= 100) then
 					r_PrepareComm[]
 				endif
 			choose $d in Boolean with true do 

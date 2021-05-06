@@ -24,6 +24,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.event.MouseMotionAdapter;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -133,8 +135,8 @@ public class Visual extends JPanel {
 		
 	   void paint(Graphics2D g2) {
 		   
-		    g2.setPaint(Color.WHITE);
-	        g2.fill( new Ellipse2D.Double(x,y,dim,dim));
+		    //g2.setPaint(Color.WHITE);
+	        //g2.fill( new Ellipse2D.Double(x,y,dim,dim));
 		    g2.setPaint(Color.BLACK);
 		    g2.draw( new Ellipse2D.Double(x,y,dim,dim));
 		   		    
@@ -185,14 +187,22 @@ public class Visual extends JPanel {
 		   Graphics2D g2 = (Graphics2D)g;
 		   double x;
 		   double y;
+		   Point2D p;
+		   Point2D c;
+		   
 		   double d = host.dim;
 		   g2.setPaint(Color.BLACK);
 		 //aggiungere un controllo se link è null
+		   
 		   for (int i = 0; i < n_host; i++) {
+			   x = (hosts.get(i).getX() + d/2);
+			   y = (hosts.get(i).getY() + d/2);
 				for (int j = i + 1; j < n_host && j != i; j++) {
 					if(link.get(i,j)) {
-					   g2.draw( new Line2D.Double( (hosts.get(i).getX() + d/2),(hosts.get(i).getY() + d/2),
-							   					   (hosts.get(j).getX() + d/2),(hosts.get(j).getY() + d/2)));
+						p = new Point2D.Double(x,y);
+						c = new Point2D.Double((hosts.get(j).getX() + d/2),(hosts.get(j).getY() + d/2));
+						quadto(p,c);
+					    g2.draw( new Line2D.Double(p,c));
 					}
 				}
 			}
@@ -201,34 +211,108 @@ public class Visual extends JPanel {
 	private void drawConnection(Graphics g, HashMap <Integer, List<Integer>> connection) {
 		Graphics2D g2 = (Graphics2D) g;
 		double x1;
-		double x2;
+		double yf1;
 		double y1;
-		double y2;
+		double yf2;
+		
+		Point2D from;
+		Point2D to;
+		
 		double d = host.dim;
+		double coeff;
+		double ang;
+		double perp;
+		double incr;
 		g2.setPaint(color_ca);
 		for(int i = 0; i < n_host; i++) {
-			int id = i + 1;  
+			int id = i + 1; 
+			
 			List<Integer> Ca = connection.get(id);
 			if(Ca != null) {
 				//carica le coordinate del host da cui parte la connessione
+				
 				x1 = hosts.get(i).getX();
-				y1 = hosts.get(i).getY();
+				y1 = hosts.get(i).getY();	
 				ListIterator<Integer> il = Ca.listIterator();
 				while(il.hasNext()) {
+					from = new Point2D.Double(x1 + d/2 ,y1 + d/2);
 					//carica le coordinate del host a cui arriva la connessione
 					int host_to = il.next();
-					x2 = hosts.get(host_to - 1).getX();
-					y2 = hosts.get(host_to - 1).getY();
+					to = new Point2D.Double(hosts.get(host_to - 1).getX() + d/2,hosts.get(host_to - 1).getY()+ d/2);
+					coeff = (to.getY() - from.getY())/(to.getX() - from.getX());					
+					quadto(from,to);
+					
 					//disegna la linea
-					g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER)); // g2 is an instance of Graphics2D
-					g2.draw(new Line2D.Double(x1 + d/2,y1 + d/2,x2 + d/2,y2 + d/2));
+					g2.setStroke(new BasicStroke(2.0f)); // g2 is an instance of Graphics2D
+					g2.draw(new Line2D.Double(from,to));
+				
+					g2.setStroke(new BasicStroke(1));
+
+					Rectangle2D.Double rect = new Rectangle2D.Double(to.getX() - 2.5, to.getY() - 2.5, 5, 5);
+					g2.setPaint(Color.ORANGE);
+					g2.fill(rect);
+					//quadratino blu indica l'host che ha iniziato la connessione
+					rect = new Rectangle2D.Double(from.getX() - 2.5, from.getY() - 2.5, 5, 5);
+					g2.setPaint(Color.BLUE);
+					g2.fill(rect);
+					g2.setPaint(color_ca);
+					
 				}
 				    g2.setStroke(new BasicStroke(1)); //reimposta lo spessore della linea a 1
 			}
 		}
+		
+	}
+	//elimina i tratti dei segmenti di connessione che attraversano l'host
+	private void quadto(Point2D c,Point2D p) {
+		double coeff = Math.abs((p.getY() - c.getY())/(p.getX() - c.getX()));
+		double a = Math.atan(coeff);
+		double xc = c.getX();
+		double yc = c.getY();
+		double dim = host.getDim()/2;
+		double xa = dim * Math.cos(a);
+		double ya =  dim * Math.sin(a);
+		
+		if(p.getX() < xc && p.getY()< yc) {
+			   p.setLocation(p.getX() + xa, p.getY() + ya);
+			   c.setLocation(c.getX() - xa, c.getY() - ya);
+			   
+		}else if(p.getX() < xc && p.getY()> yc) {
+			   p.setLocation(p.getX() + xa, p.getY() - ya);
+			   c.setLocation(c.getX() - xa, c.getY() + ya);
+
+		}else if(p.getX() > xc && p.getY()< yc) {
+				p.setLocation(p.getX() - xa, p.getY() + ya);
+				c.setLocation(c.getX() + xa, c.getY() - ya);
+				
+		}else if (p.getX() > xc && p.getY()> yc) {
+				p.setLocation(p.getX() - xa, p.getY() - ya);
+				c.setLocation(c.getX() + xa, c.getY() + ya);
+				
+		}
+		
+		if (p.getX() == xc) {
+			if(p.getY() < yc) {
+			   p.setLocation(p.getX(), p.getY() + dim);
+			   c.setLocation(c.getX(), c.getY() - dim);
+			}else {
+			   p.setLocation(p.getX() , p.getY() - dim);
+			   c.setLocation(c.getX(), c.getY() + dim);
+		 }
+		}
+		if(p.getY() == yc) {
+			if(p.getX() < xc) {
+			   p.setLocation(p.getX() + dim, p.getY()  );
+			   c.setLocation(c.getX() - dim, c.getY()  );
+			}else {
+			   p.setLocation(p.getX() - dim, p.getY());
+			   c.setLocation(c.getX() + dim, c.getY()  );
+
+			}
+		}
 	}
 	
-	
+
    protected void paintComponent(Graphics g) {
 	   super.paintComponent(g);
 	   Graphics2D g2 = (Graphics2D)g;
@@ -244,9 +328,9 @@ public class Visual extends JPanel {
 	   
 	   if(link != null) {drawLink(g);};
 	   color_ca(Color.GREEN);
-	   if(success_ca != null) {color_ca(Color.GREEN);drawConnection(g,success_ca);}
+	   if(success_ca != null) {color_ca(Color.GREEN); drawConnection(g,success_ca);}
 	   color_ca(Color.RED);
-	   if(fail_ca != null) {color_ca(Color.RED);drawConnection(g,fail_ca);}
+	   if(fail_ca != null) {color_ca(Color.RED); drawConnection(g,fail_ca);}
 	   
 	   
 	   
