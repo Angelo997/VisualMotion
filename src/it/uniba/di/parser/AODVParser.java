@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JFrame;
+
 import it.uniba.di.support.MobilityModel;
 import it.uniba.di.support.Utility;
 import it.uniba.di.support.structures.ConnectivityMatrix;
@@ -23,6 +25,10 @@ import it.uniba.di.support.structures.ConnectivityMatrix;
  */
 
 public class AODVParser extends Utility {
+	public static java.awt.List progressList = new java.awt.List();
+	private static JFrame out = null;
+	
+	
 	private static HashMap<Integer,List<Integer>> success_ca = null;
 	private static HashMap<Integer,List<Integer>> fail_ca = null;
 	private static HashMap<String, Integer> metricsMap = new HashMap<>();
@@ -313,6 +319,42 @@ public class AODVParser extends Utility {
 	 * @return
 	 * @throws IOException
 	 */
+	public static void showOut(String outputFile) {
+		boolean finalState = false;
+		out = new JFrame();
+		out.setBounds(0,0, 400, 400);
+		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
+			String line; 
+			
+			while ((line = br.readLine()) != null) {
+				
+				if(finalState) {
+					progressList.add(line);
+				}
+				
+				if (line.toLowerCase().contains("final state")) {
+					finalState = true;
+				}
+			}
+		} catch (IOException ex) {
+			displayInfo("ERROR: Problem reading file (AODVParser.parser)");
+			error(ex);
+		}
+		progressList.setBounds(23, 387, 543, 138);
+		out.getContentPane().add(progressList);
+		out.setVisible(true);
+		
+		 try {
+			 
+			 java.util.concurrent.TimeUnit.SECONDS.sleep(30);
+			 
+	        } catch (InterruptedException e) {
+	            e.printStackTrace();
+	        }
+		out.dispose();
+	}
+	
+	
 	public static HashMap<String, Integer> parser(String outputFile) throws IOException {
 
 		// Reset metriche istantanee
@@ -323,14 +365,20 @@ public class AODVParser extends Utility {
 		metricsMap.put(RT_SIZE, 0);
 		success_ca = null; //resetta la lista delle connessioni
 		fail_ca = null;
+		
+		
+		
 		boolean finalState = false;
 
 		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
 			String line;
+			
 			while ((line = br.readLine()) != null) {
+
+				
 				if (finalState) {
+					
 					if (line.contains(RT_UPDATE)) {
-						//System.out.println(line); // TO COMMENT
 						Integer rt_update = Integer.valueOf(line.substring(line.indexOf('=') + 1));
 						metricsMap.put(RT_UPDATE, metricsMap.get(RT_UPDATE) + rt_update);
 					}
@@ -422,7 +470,7 @@ public class AODVParser extends Utility {
 					}
 
 					if (line.contains("entry(")) {
-						//System.out.println(line); //TO COMMENT
+
 						metricsMap.put(RT_SIZE, metricsMap.get(RT_SIZE) + 1);
 
 					}
@@ -437,6 +485,8 @@ public class AODVParser extends Utility {
 			displayInfo("ERROR: Problem reading file (AODVParser.parser)");
 			error(ex);
 		}
+		
+		
 		return metricsMap;
 	}
 	

@@ -410,6 +410,7 @@ public class Program extends Utility {
 											Gs.loadLink(connectivityMatrix);
 											Gs.loadConnection(success_ca,fail_ca);
 											Gs.repaint();
+											AODVParser.showOut(simulationDir + "\\logs\\out.txt");
 											/*
 											Gs.color_ca(Color.RED);
 											Gs.loadConnection(fail_ca);
