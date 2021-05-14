@@ -1,7 +1,13 @@
 package it.uniba.di.support.structures;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * <p>
@@ -10,6 +16,8 @@ import java.util.Arrays;
  * 
  * @author Marco Pinto
  */
+
+
 public class ConnectivityMatrix<T> {
 	private T[] matrix;
 	private int size;
@@ -110,7 +118,70 @@ public class ConnectivityMatrix<T> {
 		}
 		return defaultValue;
 	}
+	//bfs usata per trovare il percorso più breve
+	
+	private class item_c<T>{
+	    private char color;
+	    private int d ;
+	    private  int parent;
+	    item_c(){
+	       color = 'w';
+	 	   d = -1;
+	 	   parent = -1;
+	    }
+	}
+	// bfs from introduction to algorithms cormen, leiserson, rivest, stein 
+	private item_c[] buildtree(int start){
+		item_c<T> explored[] = new item_c[this.size];
+		for (int i = 0; i < this.size; i++){
+			explored[i] = new item_c ();
+		}
+		int nodo;
 
+		LinkedList <Integer> frontier = new LinkedList<Integer> ();
+		explored[start].color = 'g';
+		explored[start].d = 0;
+		explored[start].parent = -1;
+		frontier.addLast(start);
+		
+		while(!frontier.isEmpty()) {
+			nodo = frontier.pop();
+			for (int j = 0; j < this.size; j++) {
+				if(get(nodo, j) != defaultValue) {
+				   if(explored[j].color == 'w') {
+					   explored[j].color = 'g';
+					   explored[j].d = explored[nodo].d + 1 ;
+					   explored[j].parent = nodo;
+					   frontier.addLast(j);
+				   }
+				}
+			}
+			explored[nodo].color = 'b';
+		}
+		return explored;
+	}
+
+	
+	private void findpath (int start,int end, item_c [] tree) {
+		if (end == start){
+			System.out.println(start);
+			
+		}else if (tree[end].parent == -1) {
+			System.out.println("NO PATH");
+		}else {
+			findpath(start,tree[end].parent,tree);
+			System.out.println(end);
+		}
+		
+	}
+	
+	public void findRoute(int start,int end) {
+		start = start - 1;
+		end = end - 1;
+		item_c[] tree = buildtree(start);
+		findpath(start,end,tree);
+	}
+	
 	/**
 	 * 
 	 */

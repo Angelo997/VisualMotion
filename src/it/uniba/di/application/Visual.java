@@ -24,6 +24,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.event.MouseMotionAdapter;
@@ -44,8 +45,8 @@ public class Visual extends JPanel {
 	
 	private int n_host = 0;
 	private HashMap<Integer,host> hosts; //tempo di ritrovamento degli elementi costante
-	private HashMap<Integer,List<Integer>> success_ca; // = new TreeMap<Integer,host>();
-	private HashMap<Integer,List<Integer>> fail_ca; // = new TreeMap<Integer,host>();
+
+	private HashMap<Integer,List<Integer>> ca;
 	private ConnectivityMatrix<Boolean> link;
 	private Color color_ca = Color.BLACK;
 
@@ -174,9 +175,8 @@ public class Visual extends JPanel {
 		   link = cm; //va fatta la deep copy
 	 }
 	
-	public void loadConnection (HashMap<Integer,List<Integer>> success,HashMap<Integer,List<Integer>> failed) {
-		   success_ca = success;
-		   fail_ca = failed;
+	public void loadConnection (HashMap<Integer,List<Integer>> ca_tot) {
+		  ca = ca_tot;
 	}
 	
 	public void color_ca (Color c) {
@@ -211,18 +211,14 @@ public class Visual extends JPanel {
 	private void drawConnection(Graphics g, HashMap <Integer, List<Integer>> connection) {
 		Graphics2D g2 = (Graphics2D) g;
 		double x1;
-		double yf1;
 		double y1;
-		double yf2;
+
 		
 		Point2D from;
 		Point2D to;
 		
 		double d = host.dim;
-		double coeff;
-		double ang;
-		double perp;
-		double incr;
+		
 		g2.setPaint(color_ca);
 		for(int i = 0; i < n_host; i++) {
 			int id = i + 1; 
@@ -238,31 +234,57 @@ public class Visual extends JPanel {
 					from = new Point2D.Double(x1 + d/2 ,y1 + d/2);
 					//carica le coordinate del host a cui arriva la connessione
 					int host_to = il.next();
-					to = new Point2D.Double(hosts.get(host_to - 1).getX() + d/2,hosts.get(host_to - 1).getY()+ d/2);
-					coeff = (to.getY() - from.getY())/(to.getX() - from.getX());					
+					to = new Point2D.Double(hosts.get(host_to - 1).getX() + d/2,hosts.get(host_to - 1).getY()+ d/2);				
 					quadto(from,to);
-					
 					//disegna la linea
 					g2.setStroke(new BasicStroke(2.0f)); // g2 is an instance of Graphics2D
-					g2.draw(new Line2D.Double(from,to));
-				
-					g2.setStroke(new BasicStroke(1));
-
-					Rectangle2D.Double rect = new Rectangle2D.Double(to.getX() - 2.5, to.getY() - 2.5, 5, 5);
-					g2.setPaint(Color.ORANGE);
-					g2.fill(rect);
-					//quadratino blu indica l'host che ha iniziato la connessione
-					rect = new Rectangle2D.Double(from.getX() - 2.5, from.getY() - 2.5, 5, 5);
-					g2.setPaint(Color.BLUE);
-					g2.fill(rect);
-					g2.setPaint(color_ca);
-					
+					drawArrowLine(g2,from.getX(),from.getY(),to.getX(),to.getY(),15,7);
 				}
 				    g2.setStroke(new BasicStroke(1)); //reimposta lo spessore della linea a 1
 			}
 		}
 		
 	}
+	/**
+	 * Draw an arrow line between two points.
+	 * @param g the graphics component.
+	 * @param x1 x-position of first point.
+	 * @param y1 y-position of first point.
+	 * @param x2 x-position of second point.
+	 * @param y2 y-position of second point.
+	 * @param d  the width of the arrow.
+	 * @param h  the height of the arrow.
+	 */
+	private void drawArrowLine(Graphics g, double x1, double y1, double x2, double y2, double d, double h) {
+		Graphics2D g2 = (Graphics2D) g;
+		Path2D.Double p = new Path2D.Double();
+	    double dx = x2 - x1, dy = y2 - y1;
+	    double D = Math.sqrt(dx*dx + dy*dy);
+	    double xm = D - d, xn = xm, ym = h, yn = -h, x;
+	    double sin = dy / D, cos = dx / D;
+
+	    x = xm*cos - ym*sin + x1;
+	    ym = xm*sin + ym*cos + y1;
+	    xm = x;
+
+	    x = xn*cos - yn*sin + x1;
+	    yn = xn*sin + yn*cos + y1;
+	    xn = x;
+	    p.moveTo(x2,y2);
+	    p.lineTo(xm,ym);
+	    p.lineTo(xn,yn);
+	    p.closePath();
+	   
+	    g2.draw(new Line2D.Double(x1,y1,x2,y2));
+	    g2.fill(p);
+	    g2.setPaint(Color.BLACK);
+	    g2.setStroke(new BasicStroke(1));
+	    g2.draw(p);
+	    g2.setPaint(Color.YELLOW);
+	    g2.setStroke(new BasicStroke(2.0f));
+	  
+	}
+	
 	//elimina i tratti dei segmenti di connessione che attraversano l'host
 	private void quadto(Point2D c,Point2D p) {
 		double coeff = Math.abs((p.getY() - c.getY())/(p.getX() - c.getX()));
@@ -327,11 +349,12 @@ public class Visual extends JPanel {
 	   
 	   
 	   if(link != null) {drawLink(g);};
-	   color_ca(Color.GREEN);
-	   if(success_ca != null) {color_ca(Color.GREEN); drawConnection(g,success_ca);}
-	   color_ca(Color.RED);
-	   if(fail_ca != null) {color_ca(Color.RED); drawConnection(g,fail_ca);}
-	   
+
+	   if(ca != null) { 
+		   color_ca(Color.YELLOW); 
+		   drawConnection(g,ca);
+		}
+
 	   
 	   
 	   for (int i = 0; i < n_host; i++) {

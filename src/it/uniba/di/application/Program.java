@@ -91,6 +91,7 @@ public class Program extends Utility {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		int dim_label = 20;
 		frameALA = new JFrame();
 		frameALA.setResizable(false);
 		frameALA.setTitle("MOTION");
@@ -106,9 +107,10 @@ public class Program extends Utility {
 		frameALA.setBounds(x, y, 1200, 550);
 		frameALA.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frameALA.getContentPane().setLayout(null);
+		frameALA.getContentPane().setBackground(Color.LIGHT_GRAY);
 
 		JLabel lblNumberOfSessions = new JLabel("Number of sessions");
-		lblNumberOfSessions.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblNumberOfSessions.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblNumberOfSessions.setBounds(12, 57, 193, 25);
 		frameALA.getContentPane().add(lblNumberOfSessions);
 
@@ -130,7 +132,7 @@ public class Program extends Utility {
 		JSpinner fieldHost = new JSpinner();
 		fieldSession
 				.setModel(new SpinnerNumberModel(Integer.valueOf(10), Integer.valueOf(1), null, Integer.valueOf(1)));
-		fieldSession.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldSession.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 
 		JLabel lblSessionTime = new JLabel("Session duration");
 		JLabel lblInitiatorProbability = new JLabel("Initiator Probability");
@@ -223,9 +225,24 @@ public class Program extends Utility {
 		x = frameALA.getWidth();
 		y = frameALA.getHeight();
 		Visual Gs = new Visual(x/2 - 50 , y*3/4 - 20);
+		JFrame s_screen = new JFrame();
+		s_screen.getContentPane().setLayout(null);
+		s_screen.setBounds((int) ((dimension.getWidth() - frameALA.getWidth()) / 2),
+		(0), x/2 - 25, (y*3/4) + 30);
+		
+		s_screen.setResizable(false);
+		Visual screen  = new Visual(x/2 - 50 , y*3/4 - 20);
+		screen.setBounds(5,5, x/2 - 50 , y*3/4 - 20);
+		s_screen.getContentPane().add(screen);
+		s_screen.setBackground(Color.LIGHT_GRAY);
+		
+		
+		
+		
 		//Gs.setForeground(Color.BLACK);
 	    Gs.setBounds(x/2 + 25, 10, x/2 - 50 , y*3/4 - 20);
 		frameALA.getContentPane().add(Gs);
+		
 		
 		startButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -234,6 +251,7 @@ public class Program extends Utility {
 					@Override
 					public void run() {
 						Gs.setNumberHost((int) fieldHost.getValue());
+						screen.setNumberHost((int) fieldHost.getValue());
 						String selectedProtocol = choice.getSelectedItem();
 						if ((int) fieldSession.getValue() > 0) {
 							switch (selectedProtocol) {
@@ -358,13 +376,11 @@ public class Program extends Utility {
 										}
 										if (isSimulationOk) {
 											HashMap<String, Integer> metrics = null;
-											HashMap<Integer, List<Integer>> success_ca = null;
-											HashMap<Integer, List<Integer>> fail_ca = null;
+											HashMap<Integer, List<Integer>> ca_tot = null;
 											switch (selectedProtocol) {
 											case "AODV":
 												metrics = aodvParser.parser(simulationDir + "\\logs\\out.txt");
-												success_ca = aodvParser.getSuccess_ca();
-												fail_ca = aodvParser.getFail_ca();
+												ca_tot = aodvParser.getTot_ca();
 												if (moveCounter > 1 && Integer
 														.valueOf(metrics.get(AODVParser.RT_SIZE)) < metricsList
 																.get(metricsList.size() - 1).get(AODVParser.RT_SIZE)) {
@@ -407,10 +423,19 @@ public class Program extends Utility {
 											default:
 												break;
 											}
+											
 											Gs.loadLink(connectivityMatrix);
-											Gs.loadConnection(success_ca,fail_ca);
+											connectivityMatrix.findRoute(1, 4);
+																		
+										    screen.loadConnection(ca_tot);
+											
+											screen.repaint();
 											Gs.repaint();
-											/*AODVParser.showOut(simulationDir + "\\logs\\out.txt");
+											
+											s_screen.setVisible(true);
+											AODVParser.showOut(simulationDir + "\\logs\\out.txt");
+											
+											/*
 											 * mostra per 30 secondi il file out.txt su un JFrame
 											 */
 										
@@ -454,19 +479,19 @@ public class Program extends Utility {
 	
 	
 		
-		startButton.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		startButton.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		startButton.setBounds(111, 463, 176, 41);
 		frameALA.getContentPane().add(startButton);
 
 		JLabel lblNumberOfHosts = new JLabel("Number of hosts");
 		lblNumberOfHosts.setForeground(Color.BLACK);
-		lblNumberOfHosts.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblNumberOfHosts.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblNumberOfHosts.setBounds(12, 95, 155, 25);
 		frameALA.getContentPane().add(lblNumberOfHosts);
 
 		JLabel lblMobility = new JLabel("Mobility level");
 		lblMobility.setForeground(Color.BLACK);
-		lblMobility.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblMobility.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblMobility.setBounds(12, 260, 155, 25);
 		frameALA.getContentPane().add(lblMobility);
 
@@ -479,6 +504,7 @@ public class Program extends Utility {
 				textPane.setText(String.valueOf(slider.getValue()) + " %");
 			}
 		});
+		slider.setBackground(Color.LIGHT_GRAY);
 		slider.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		slider.setValue(20);
 		slider.setSnapToTicks(true);
@@ -486,6 +512,7 @@ public class Program extends Utility {
 		slider.setPaintTicks(true);
 		slider.setLabelTable(slider.createStandardLabels(20, 0));
 		slider.setBounds(196, 256, 166, 47);
+		
 		frameALA.getContentPane().add(slider);
 
 		textPane_1.setEnabled(true);
@@ -497,6 +524,7 @@ public class Program extends Utility {
 				textPane_1.setText(String.valueOf(slider_1.getValue()) + " %");
 			}
 		});
+		slider_1.setBackground(Color.LIGHT_GRAY);
 		slider_1.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		slider_1.setValue(20);
 		slider_1.setSnapToTicks(true);
@@ -504,6 +532,7 @@ public class Program extends Utility {
 		slider_1.setPaintTicks(true);
 		slider_1.setLabelTable(slider_1.createStandardLabels(20, 0));
 		slider_1.setBounds(196, 207, 166, 47);
+		
 		frameALA.getContentPane().add(slider_1);
 
 		textPane_2.setEnabled(true);
@@ -516,23 +545,25 @@ public class Program extends Utility {
 			}
 		});
 		slider_2.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		slider_2.setBackground(Color.LIGHT_GRAY);
 		slider_2.setValue(20);
 		slider_2.setSnapToTicks(true);
 		slider_2.setPaintLabels(true);
 		slider_2.setPaintTicks(true);
 		slider_2.setLabelTable(slider_2.createStandardLabels(20, 0));
 		slider_2.setBounds(196, 347, 166, 47);
+		
 		frameALA.getContentPane().add(slider_2);
 
 		fieldHost.setModel(new SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(2), null, Integer.valueOf(1)));
-		fieldHost.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldHost.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		fieldHost.setBounds(289, 95, 73, 25);
 		frameALA.getContentPane().add(fieldHost);
 		fieldHost.setValue(5);
 
 		fieldRREPTimeout
 				.setModel(new SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(2), null, Integer.valueOf(1)));
-		fieldRREPTimeout.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldRREPTimeout.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		fieldRREPTimeout.setBounds(289, 398, 73, 25);
 		frameALA.getContentPane().add(fieldRREPTimeout);
 		fieldRREPTimeout.setValue(5);
@@ -541,17 +572,16 @@ public class Program extends Utility {
 		fieldSession.setValue(10);
 		frameALA.getContentPane().add(fieldSession);
 
-		textPane.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		textPane.setBounds(386, 256, 73, 29);
+		textPane.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		textPane.setText(String.valueOf(slider.getValue()) + " %");
 		frameALA.getContentPane().add(textPane);
 
-		textPane_1.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		textPane_1.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		textPane_1.setBounds(386, 207, 73, 29);
 		textPane_1.setText(String.valueOf(slider_1.getValue()) + " %");
 		frameALA.getContentPane().add(textPane_1);
 
-		textPane_2.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		textPane_2.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		textPane_2.setBounds(386, 347, 73, 29);
 		textPane_2.setText(String.valueOf(slider_2.getValue()) + " %");
 		frameALA.getContentPane().add(textPane_2);
@@ -565,66 +595,67 @@ public class Program extends Utility {
 				startButton.setEnabled(true);
 			}
 		});
-		stopButton.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		stopButton.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		stopButton.setBounds(299, 463, 176, 41);
 		stopButton.setEnabled(false);
 		frameALA.getContentPane().add(stopButton);
 
 		lblNumberOfBh.setForeground(Color.BLACK);
-		lblNumberOfBh.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblNumberOfBh.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblNumberOfBh.setBounds(12, 132, 193, 25);
 		lblNumberOfBh.setVisible(false);
 		frameALA.getContentPane().add(lblNumberOfBh);
 
-		fieldBlackhole.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldBlackhole.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		fieldBlackhole.setBounds(266, 132, 73, 25);
 		fieldBlackhole.setVisible(false);
 		frameALA.getContentPane().add(fieldBlackhole);
 
 		lblNumberOfColluder.setForeground(Color.BLACK);
-		lblNumberOfColluder.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblNumberOfColluder.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblNumberOfColluder.setBounds(12, 170, 183, 25);
 		lblNumberOfColluder.setVisible(false);
 		frameALA.getContentPane().add(lblNumberOfColluder);
 
-		fieldColluder.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldColluder.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		fieldColluder.setBounds(266, 170, 73, 25);
 		fieldColluder.setVisible(false);
 		frameALA.getContentPane().add(fieldColluder);
 
 		lblSessionTime.setForeground(Color.BLACK);
-		lblSessionTime.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblSessionTime.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblSessionTime.setBounds(12, 304, 225, 25);
 		lblSessionTime.setVisible(true);
 		frameALA.getContentPane().add(lblSessionTime);
 
 		lblInitiatorProbability.setForeground(Color.BLACK);
-		lblInitiatorProbability.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		
+		lblInitiatorProbability.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblInitiatorProbability.setBounds(12, 351, 225, 25);
 		lblInitiatorProbability.setVisible(true);
 		frameALA.getContentPane().add(lblInitiatorProbability);
 
 		lblRREPTimeout.setForeground(Color.BLACK);
-		lblRREPTimeout.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblRREPTimeout.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblRREPTimeout.setBounds(12, 398, 225, 25);
 		lblRREPTimeout.setVisible(true);
 		frameALA.getContentPane().add(lblRREPTimeout);
 
 		lblSequenceNumberStep.setForeground(Color.BLACK);
-		lblSequenceNumberStep.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblSequenceNumberStep.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblSequenceNumberStep.setBounds(12, 390, 237, 25);
 		lblSequenceNumberStep.setVisible(false);
 		frameALA.getContentPane().add(lblSequenceNumberStep);
 
 		lblSequenceNumber.setForeground(Color.BLACK);
-		lblSequenceNumber.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblSequenceNumber.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblSequenceNumber.setBounds(12, 428, 237, 25);
 		lblSequenceNumber.setVisible(false);
 		frameALA.getContentPane().add(lblSequenceNumber);
 
 		fieldSessionTimeout
 				.setModel(new SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(1), null, Integer.valueOf(1)));
-		fieldSessionTimeout.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldSessionTimeout.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		fieldSessionTimeout.setBounds(289, 305, 73, 25);
 		fieldSessionTimeout.setValue(5);
 		fieldSessionTimeout.setVisible(true);
@@ -632,21 +663,21 @@ public class Program extends Utility {
 
 		fieldSeqNumStep
 				.setModel(new SpinnerNumberModel(Integer.valueOf(10), Integer.valueOf(1), null, Integer.valueOf(1)));
-		fieldSeqNumStep.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldSeqNumStep.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		fieldSeqNumStep.setBounds(266, 390, 73, 25);
 		fieldSeqNumStep.setVisible(false);
 		frameALA.getContentPane().add(fieldSeqNumStep);
 
 		fieldSeqNumDefault
 				.setModel(new SpinnerNumberModel(Integer.valueOf(100), Integer.valueOf(1), null, Integer.valueOf(1)));
-		fieldSeqNumDefault.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		fieldSeqNumDefault.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		fieldSeqNumDefault.setBounds(266, 428, 73, 25);
 		fieldSeqNumDefault.setVisible(false);
 		frameALA.getContentPane().add(fieldSeqNumDefault);
 
 		JLabel lblInitialConnectivity = new JLabel("Init. Connectivity");
 		lblInitialConnectivity.setForeground(Color.BLACK);
-		lblInitialConnectivity.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblInitialConnectivity.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		lblInitialConnectivity.setBounds(12, 207, 155, 25);
 		lblInitialConnectivity.setEnabled(true);
 		frameALA.getContentPane().add(lblInitialConnectivity);
@@ -655,7 +686,7 @@ public class Program extends Utility {
 		
 		
 		JLabel timeLabel = new JLabel();
-		timeLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		timeLabel.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		timeLabel.setBounds(399, 0, 201, 34);
 		frameALA.getContentPane().add(timeLabel);
 		new Thread(new Runnable() {

@@ -1,5 +1,11 @@
 package it.uniba.di.parser;
 
+import java.awt.AWTException;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,7 +19,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import it.uniba.di.support.MobilityModel;
 import it.uniba.di.support.Utility;
@@ -31,6 +40,7 @@ public class AODVParser extends Utility {
 	
 	private static HashMap<Integer,List<Integer>> success_ca = null;
 	private static HashMap<Integer,List<Integer>> fail_ca = null;
+	private static HashMap<Integer,List<Integer>> ca_tot = new HashMap<Integer,List<Integer>>();
 	private static HashMap<String, Integer> metricsMap = new HashMap<>();
 	private static List<String> uniqueMessage = new ArrayList<>();
 	private static List<String> uniqueRoutingTables = new ArrayList<>();
@@ -321,8 +331,15 @@ public class AODVParser extends Utility {
 	 */
 	public static void showOut(String outputFile) {
 		boolean finalState = false;
+		int paused = 0;
 		out = new JFrame();
-		out.setBounds(0,0, 400, 400);
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		out.setBounds(100, 100, 1000, 570);
+
+		int x = (int) ((dimension.getWidth()*2/4));
+		int y = (int) (0);
+		out.setBounds(x,y, 415, 400);
+		out.getContentPane().setLayout(null);
 		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
 			String line; 
 			
@@ -333,6 +350,7 @@ public class AODVParser extends Utility {
 				}
 				
 				if (line.toLowerCase().contains("final state")) {
+					progressList.add(line);
 					finalState = true;
 				}
 			}
@@ -340,18 +358,42 @@ public class AODVParser extends Utility {
 			displayInfo("ERROR: Problem reading file (AODVParser.parser)");
 			error(ex);
 		}
-		progressList.setBounds(23, 387, 543, 138);
+		progressList.setBounds(0,0, 400, 300);
 		out.getContentPane().add(progressList);
-		out.setVisible(true);
+		JButton nextbutton = new JButton("NEXT");
+		Thread p = Thread.currentThread();
 		
-		 try {
-			 
-			 java.util.concurrent.TimeUnit.SECONDS.sleep(30);
-			 
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        }
-		out.dispose();
+		
+		
+		nextbutton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				synchronized(out) {
+					out.dispose();
+					out.notify();
+				}
+				
+			}
+		});
+		
+		nextbutton.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		nextbutton.setBounds(133, 310,(out.getWidth()/3) - 5, 40);
+		out.getContentPane().add(nextbutton);
+			
+	    try {
+	    	synchronized(out){
+	    	 out.setVisible(true);
+	    	 out.setResizable(false);
+	    	 out.wait();
+	    	}
+	    	
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+	    	
+	    
+		progressList.removeAll();
+		
 	}
 	
 	
@@ -365,6 +407,7 @@ public class AODVParser extends Utility {
 		metricsMap.put(RT_SIZE, 0);
 		success_ca = null; //resetta la lista delle connessioni
 		fail_ca = null;
+		ca_tot.clear();
 		
 		
 		
@@ -414,7 +457,6 @@ public class AODVParser extends Utility {
 					}
 
 					if (line.startsWith(CA_SUCCESS) || line.startsWith(CA_FAILURE)) {
-						System.out.println(line);
 						String identifier = line.substring(line.indexOf('_') + 1, line.indexOf('('));
 						String host_s = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
 						String[] hosts;
@@ -422,14 +464,16 @@ public class AODVParser extends Utility {
 						
 						int from = -1;
 						int to = -1;
+						host_s = host_s.replace("host","");
+						hosts = host_s.split(",");
+						from = Integer.parseInt(hosts[0]);
+						to = Integer.parseInt(hosts[1]);
+						
 						switch (identifier) {
 						case "success":
 							if(success_ca == null) {success_ca = new HashMap<Integer,List<Integer>>();}//alloca la memoria solo se necessario
 							metric = CA_SUCCESS;
-							host_s = host_s.replace("host","");
-							hosts = host_s.split(",");
-							from = Integer.parseInt(hosts[0]);
-							to = Integer.parseInt(hosts[1]);
+						
 							if(success_ca.get(from) == null) {
 								success_ca.put(from, new ArrayList<Integer>() );
 								success_ca.get(from).add(to);
@@ -441,10 +485,7 @@ public class AODVParser extends Utility {
 						case "failure":
 							if(fail_ca == null) {fail_ca = new HashMap<Integer,List<Integer>>();} 
 							metric = CA_FAILURE;
-							host_s = host_s.replace("host","");
-							hosts = host_s.split(",");
-							from = Integer.parseInt(hosts[0]);
-							to = Integer.parseInt(hosts[1]);
+							
 							if(fail_ca.get(from) == null) {
 								fail_ca.put(from, new ArrayList<Integer>() );
 								fail_ca.get(from).add(to);
@@ -466,7 +507,23 @@ public class AODVParser extends Utility {
 					if (line.startsWith(CA_TOT)) {
 						Integer ca_value = Integer.valueOf(line.substring(line.indexOf('=') + 1));
 						metricsMap.put(CA_TOT, metricsMap.get(CA_TOT) + ca_value);
-
+						String host_s = line.substring(line.indexOf('(') + 1, line.indexOf(')'));
+						String[] hosts;
+						
+						int from = -1;
+						int to = -1;
+						host_s = host_s.replace("host","");
+						hosts = host_s.split(",");
+						from = Integer.parseInt(hosts[0]);
+						to = Integer.parseInt(hosts[1]);
+						
+						if(ca_tot.get(from) == null) {
+							ca_tot.put(from, new ArrayList<Integer>() );
+							ca_tot.get(from).add(to);
+						}else {
+							ca_tot.get(from).add(to);
+						}
+								
 					}
 
 					if (line.contains("entry(")) {
@@ -498,6 +555,10 @@ public class AODVParser extends Utility {
     public static HashMap<Integer,List<Integer>> getFail_ca(){
 			return fail_ca;
 	}
+    
+    public static HashMap<Integer,List<Integer>> getTot_ca(){
+		return ca_tot;
+}
 	// Funzioni di supporto
 
 	/**
