@@ -146,6 +146,7 @@ public class ConnectivityMatrix<T> {
 		
 		while(!frontier.isEmpty()) {
 			nodo = frontier.pop();
+			//controlla se i nodi adiacenti sono goal e li aggiuge alla frontier
 			for (int j = 0; j < this.size; j++) {
 				if(get(nodo, j) != defaultValue) {
 				   if(explored[j].color == 'w') {
@@ -160,26 +161,30 @@ public class ConnectivityMatrix<T> {
 		}
 		return explored;
 	}
-
-	
-	private void findpath (int start,int end, item_c [] tree) {
+  
+	//risale l'albero costruito dal grafo per trovare il percorso da start a end
+	private void findpath (int start,int end, item_c [] tree,LinkedList<Integer> path) {
+		
 		if (end == start){
-			System.out.println(start);
+			
+			//path.addLast(start + 1);
 			
 		}else if (tree[end].parent == -1) {
-			System.out.println("NO PATH");
+			
+			path = null;
 		}else {
-			findpath(start,tree[end].parent,tree);
-			System.out.println(end);
+			findpath(start,tree[end].parent,tree,path);
+			path.addLast(end + 1);
 		}
 		
 	}
-	
-	public void findRoute(int start,int end) {
+	// la numerazione degli host nel path parte da 1
+	public LinkedList<Integer> findRoute(int start,int end) {
+		LinkedList<Integer> path = new LinkedList<Integer> ();
 		start = start - 1;
 		end = end - 1;
-		item_c[] tree = buildtree(start);
-		findpath(start,end,tree);
+		findpath(start,end,buildtree(start),path);
+		return path;
 	}
 	
 	/**

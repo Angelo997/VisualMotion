@@ -22,7 +22,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -42,7 +44,7 @@ import it.uniba.di.support.Utility;
 import it.uniba.di.support.structures.ConnectivityMatrix;
 
 public class Program extends Utility {
-
+	private JFrame s_screen;
 	private JFrame frameALA;
 	public static String fileName = null;
 	private static String modelName = null;
@@ -96,15 +98,10 @@ public class Program extends Utility {
 		frameALA.setResizable(false);
 		frameALA.setTitle("MOTION");
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-		frameALA.setBounds(100, 100, 1000, 570);
-		/*
+		frameALA.setBounds(100, 100, 619, 614);
 		int x = (int) ((dimension.getWidth() - frameALA.getWidth()) / 2);
 		int y = (int) ((dimension.getHeight() - frameALA.getHeight()) / 2);
-		*/
-		int x = (int) ((dimension.getWidth() - frameALA.getWidth()) / 2);
-		int y = (int) (0);
-		int height = (int) dimension.getHeight();
-		frameALA.setBounds(x, y, 1200, 550);
+		frameALA.setBounds(x, y, 619, 553);
 		frameALA.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frameALA.getContentPane().setLayout(null);
 		frameALA.getContentPane().setBackground(Color.LIGHT_GRAY);
@@ -211,38 +208,47 @@ public class Program extends Utility {
 		modelName = AODV_MODEL_PATH_AND_FILENAME;
 		frameALA.getContentPane().add(choice);
 
-		x = frameALA.getWidth();
-		y = frameALA.getHeight();
-		scrollPne.setBounds(x/2 + 25 ,y*3/4,x/2 - 50, y/4 - 40);
-		scrollPne.setVisible(true);
-		scrollPne.setAutoscrolls(true);
-		frameALA.getContentPane().add(scrollPne);
-
 		JTextPane textPane = new JTextPane();
 		JTextPane textPane_1 = new JTextPane();
 		JTextPane textPane_2 = new JTextPane();
 		
-		x = frameALA.getWidth();
-		y = frameALA.getHeight();
-		Visual Gs = new Visual(x/2 - 50 , y*3/4 - 20);
-		JFrame s_screen = new JFrame();
+		
+		int panelh = (550*3/4) - 70;
+		int panelw = (1200/2) - 50;
+		int y_pos = 5;
+		int x_pos = 5;
+
+		Visual Gs = new Visual(panelw , panelh);
+
+		//secondo pannello
+	    s_screen = new JFrame();
+		s_screen.setTitle("Connections");
 		s_screen.getContentPane().setLayout(null);
-		s_screen.setBounds((int) ((dimension.getWidth() - frameALA.getWidth()) / 2),
-		(0), x/2 - 25, (y*3/4) + 30);
-		
+		s_screen.setBounds((int) ((dimension.getWidth() - 1200) / 2),
+		(0), panelw * 2 + 30, panelh * 2 + 50);
+		s_screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		s_screen.setResizable(false);
-		Visual screen  = new Visual(x/2 - 50 , y*3/4 - 20);
-		screen.setBounds(5,5, x/2 - 50 , y*3/4 - 20);
-		s_screen.getContentPane().add(screen);
+		
+		Gs.setBounds(x_pos, y_pos, panelw , panelh);
+		
+		Visual s_panel  = new Visual(panelw, panelh);
+		s_panel.setBounds(x_pos, panelh + 10 ,panelw, panelh);
+		
+		
+		Visual t_panel  = new Visual(panelw , panelh);
+		t_panel.setBounds(panelw + 10 ,panelh + 10, panelw , panelh);
+ 
+	    s_screen.getContentPane().add(Gs);
+		s_screen.getContentPane().add(s_panel);
+		s_screen.getContentPane().add(t_panel);
+
+		scrollPne.setBounds(panelw + 10 ,y_pos,panelw, panelh);
+		scrollPne.setVisible(true);
+		scrollPne.setAutoscrolls(true);
+		s_screen.getContentPane().add(scrollPne);
+		
+		
 		s_screen.setBackground(Color.LIGHT_GRAY);
-		
-		
-		
-		
-		//Gs.setForeground(Color.BLACK);
-	    Gs.setBounds(x/2 + 25, 10, x/2 - 50 , y*3/4 - 20);
-		frameALA.getContentPane().add(Gs);
-		
 		
 		startButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -250,8 +256,11 @@ public class Program extends Utility {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						Gs.setNumberHost((int) fieldHost.getValue());
-						screen.setNumberHost((int) fieldHost.getValue());
+						s_screen.setVisible(true);
+						int n_host = (int) fieldHost.getValue();
+						Gs.setNumberHost(n_host);
+						s_panel.setNumberHost(n_host);
+						t_panel.setNumberHost(n_host);
 						String selectedProtocol = choice.getSelectedItem();
 						if ((int) fieldSession.getValue() > 0) {
 							switch (selectedProtocol) {
@@ -377,6 +386,7 @@ public class Program extends Utility {
 										if (isSimulationOk) {
 											HashMap<String, Integer> metrics = null;
 											HashMap<Integer, List<Integer>> ca_tot = null;
+											HashMap<Integer, List<List<Integer>>> ca_success = null;
 											switch (selectedProtocol) {
 											case "AODV":
 												metrics = aodvParser.parser(simulationDir + "\\logs\\out.txt");
@@ -425,14 +435,13 @@ public class Program extends Utility {
 											}
 											
 											Gs.loadLink(connectivityMatrix);
-											connectivityMatrix.findRoute(1, 4);
-																		
-										    screen.loadConnection(ca_tot);
-											
-											screen.repaint();
+										    s_panel.loadConnection(ca_tot);
+										    ca_success = findPaths(connectivityMatrix,n_host,ca_tot);
+										    
+											System.out.println(ca_success);
+											s_panel.repaint();
 											Gs.repaint();
-											
-											s_screen.setVisible(true);
+										
 											AODVParser.showOut(simulationDir + "\\logs\\out.txt");
 											
 											/*
@@ -789,4 +798,25 @@ public class Program extends Utility {
 			displayInfo("ERROR in creating the connectivity matrix");
 		}
 	}
+	//la numerazione degli host parte da 1
+	 private HashMap<Integer, List<List<Integer>> >findPaths(ConnectivityMatrix cm,int n_host,HashMap<Integer, List<Integer>> ca_tot){
+		  HashMap<Integer, List<List<Integer>> >ca_success  = new  HashMap<Integer, List<List<Integer>>>();
+		  ListIterator<Integer> il = null;
+		    int host_to;
+		    LinkedList<Integer> path;
+		    for(int i = 1; i <= n_host; i++) {
+		    	if(ca_tot.containsKey(i)) {
+		    		ca_success.put(i, new LinkedList<List<Integer>> ());
+		    		il = ca_tot.get(i).listIterator();
+		    		while(il.hasNext()) {
+			    		host_to = il.next();
+			    		path = cm.findRoute(i,host_to);
+			    		if(path != null) {
+			    			ca_success.get(i).add(path);
+			    		}
+			    	}
+		    	}										    
+		    }
+		    return ca_success;
+    }
 }

@@ -96,9 +96,9 @@ public class Visual extends JPanel {
 		    double x = xcenter - (r * Math.cos(2 * Math.PI * i / n_host)) - d/2;
 			double y = ycenter - (r * Math.sin(2 * Math.PI * i / n_host)) - d/2;
 			hosts.put(i, new host(i,x,y,d));
+			
 
 	  }
-		repaint();	
 	}
 	
 
@@ -182,7 +182,7 @@ public class Visual extends JPanel {
 	public void color_ca (Color c) {
 		 color_ca = c;
 	}
-	
+
 	private void drawLink(Graphics g) {
 		   Graphics2D g2 = (Graphics2D)g;
 		   double x;
@@ -207,7 +207,30 @@ public class Visual extends JPanel {
 				}
 			}
 	 }
-
+	private void drawConnection(Graphics g,int start,int end) {
+		Graphics2D g2 = (Graphics2D) g;
+		double x1;
+		double y1;
+		double x2;
+		double y2;
+		Point2D from;
+		Point2D to;
+		double d = host.dim;	
+		g2.setPaint(color_ca);				
+				x1 = hosts.get(start).getX();
+				y1 = hosts.get(start).getY();
+				x2 = hosts.get(end).getX();
+				y2 = hosts.get(end).getY();
+					from = new Point2D.Double(x1 + d/2 ,y1 + d/2);
+					to = new Point2D.Double(x2 + d/2, y2 + d/2);				
+					quadto(from,to);
+					//disegna la linea
+					g2.setStroke(new BasicStroke(2.0f)); // g2 is an instance of Graphics2D
+					drawArrowLine(g2,from.getX(),from.getY(),to.getX(),to.getY(),15,7);
+				    g2.setStroke(new BasicStroke(1)); //reimposta lo spessore della linea a 1
+	
+}
+	
 	private void drawConnection(Graphics g, HashMap <Integer, List<Integer>> connection) {
 		Graphics2D g2 = (Graphics2D) g;
 		double x1;
@@ -218,6 +241,7 @@ public class Visual extends JPanel {
 		Point2D to;
 		
 		double d = host.dim;
+		
 		
 		g2.setPaint(color_ca);
 		for(int i = 0; i < n_host; i++) {

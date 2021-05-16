@@ -37,7 +37,6 @@ public class AODVParser extends Utility {
 	public static java.awt.List progressList = new java.awt.List();
 	private static JFrame out = null;
 	
-	
 	private static HashMap<Integer,List<Integer>> success_ca = null;
 	private static HashMap<Integer,List<Integer>> fail_ca = null;
 	private static HashMap<Integer,List<Integer>> ca_tot = new HashMap<Integer,List<Integer>>();
@@ -322,7 +321,56 @@ public class AODVParser extends Utility {
 		}
 
 	}
-
+	
+private static void writeOut(String outputFile, java.awt.List progressList) {
+	boolean finalState = false;
+	try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
+		String line; 
+		
+		while ((line = br.readLine()) != null) {
+			
+			if(finalState) {
+				progressList.add(line);
+			}
+			
+			if (line.toLowerCase().contains("final state")) {
+				progressList.add(line);
+				finalState = true;
+			}
+		}
+	} catch (IOException ex) {
+		displayInfo("ERROR: Problem reading file (AODVParser.parser)");
+		error(ex);
+	}
+}
+private static void createJFrameOut() {
+	if (out == null) {
+		out = new JFrame();
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		int x = (int) ((dimension.getWidth()*2/4));
+		int y = (int) (0);
+		out.setBounds(x,y, 415, 400);
+		out.getContentPane().setLayout(null);
+		out.getContentPane().add(progressList);
+    	 out.setVisible(true);
+    	 out.setResizable(false);
+    	JButton nextbutton = new JButton("NEXT");
+    	nextbutton.addMouseListener(new MouseAdapter() {
+    			@Override
+    			public void mousePressed(MouseEvent e) {
+    				synchronized(out) {
+    					
+    					out.notify();
+    				}
+    				
+    			}
+    		});
+    		
+    		nextbutton.setFont(new Font("Tahoma", Font.PLAIN, 20));
+    		nextbutton.setBounds(133, 310,(out.getWidth()/3) - 5, 40);
+    		out.getContentPane().add(nextbutton);
+		}
+}
 	/**
 	 *
 	 * @param outputFile
@@ -330,70 +378,21 @@ public class AODVParser extends Utility {
 	 * @throws IOException
 	 */
 	public static void showOut(String outputFile) {
-		boolean finalState = false;
-		int paused = 0;
-		out = new JFrame();
-		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-		out.setBounds(100, 100, 1000, 570);
-
-		int x = (int) ((dimension.getWidth()*2/4));
-		int y = (int) (0);
-		out.setBounds(x,y, 415, 400);
-		out.getContentPane().setLayout(null);
-		try (FileReader in = new FileReader(outputFile); BufferedReader br = new BufferedReader(in)) {
-			String line; 
-			
-			while ((line = br.readLine()) != null) {
-				
-				if(finalState) {
-					progressList.add(line);
-				}
-				
-				if (line.toLowerCase().contains("final state")) {
-					progressList.add(line);
-					finalState = true;
-				}
-			}
-		} catch (IOException ex) {
-			displayInfo("ERROR: Problem reading file (AODVParser.parser)");
-			error(ex);
-		}
+		createJFrameOut();
+		writeOut(outputFile,progressList);
 		progressList.setBounds(0,0, 400, 300);
-		out.getContentPane().add(progressList);
-		JButton nextbutton = new JButton("NEXT");
-		Thread p = Thread.currentThread();
-		
-		
-		
-		nextbutton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				synchronized(out) {
-					out.dispose();
-					out.notify();
-				}
-				
-			}
-		});
-		
-		nextbutton.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		nextbutton.setBounds(133, 310,(out.getWidth()/3) - 5, 40);
-		out.getContentPane().add(nextbutton);
+	
 			
 	    try {
 	    	synchronized(out){
-	    	 out.setVisible(true);
-	    	 out.setResizable(false);
+
 	    	 out.wait();
 	    	}
 	    	
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-	    	
-	    
-		progressList.removeAll();
-		
+	    progressList.removeAll();
 	}
 	
 	
