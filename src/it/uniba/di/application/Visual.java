@@ -10,8 +10,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -27,6 +29,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Point2D.Double;
+import java.awt.image.BufferedImage;
 import java.awt.event.MouseMotionAdapter;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,18 +43,17 @@ import it.uniba.di.support.structures.ConnectivityMatrix;
 
 
 public class Visual extends JPanel {
-
 	private double width; 
 	private double height;
 	
 	private int n_host = 0;
 	private HashMap<Integer,host> hosts; //tempo di ritrovamento degli elementi costante
 
-	private HashMap<Integer,List<Integer>> ca;
+
 	private ConnectivityMatrix<Boolean> link;
-	private Color color_ca = Color.BLACK;
-
-
+	private BufferedImage OSC;  // Stores a copy of the panel content.
+	private Graphics2D OSG;     // Graphics context for drawing to OSC/
+	
 	public static void main(String[] args) {
 	    JFrame window;
 	    window = new JFrame("host");  // The parameter shows in the window title bar.
@@ -72,9 +75,13 @@ public class Visual extends JPanel {
 	    
 	
 	Visual(int w,int h){
-		
-		//center of the canvas
 		setPreferredSize( new Dimension(w,h));
+		OSC = new BufferedImage(w,h,BufferedImage.TYPE_4BYTE_ABGR);
+	    OSG = OSC.createGraphics();
+	    OSG.setBackground(new Color(0,0,0,0));
+        OSG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		//center of the canvas
+		
 		width = w;
 		height = h;
 		
@@ -105,6 +112,7 @@ public class Visual extends JPanel {
 	
 	static class host {
 		private int id;
+		boolean lit_up;
 		private double x;
 		private double y;
 		private static double dim;
@@ -115,6 +123,7 @@ public class Visual extends JPanel {
 			id = i;
 			dim =  d;
 			Color c = Color.BLACK;
+			lit_up = false;
 		}
 		static double getDim() {
 			return dim;
@@ -134,16 +143,43 @@ public class Visual extends JPanel {
 			return y;
 		}
 		
+	   public void turn_on() {lit_up = true;}
+	   private void turn_off() {lit_up = false;}
+	   protected void light_up(Graphics2D g2) {
+		   Color yellow_t = new Color(255,255,0,100);
+		   Color t_green = new Color (0,255,0,150);
+		   Color t_green2 = new Color (0,255,0,255);
+		 
+		   
+		   Point2D center = new Point2D.Double((x + dim/2),(y + dim/2));
+		     float radius = (float) dim/2;
+		     float[] dist = {0.3f, 0.9f, 1.0f};
+		     Color[] colors = {yellow_t,t_green, t_green2};
+		     RadialGradientPaint p =
+		         new RadialGradientPaint(center, radius, dist, colors);
+
+		   g2.setPaint(p);
+		   g2.fill( new Ellipse2D.Double(x,y,dim,dim));
+		  
+	   }
+		
 	   void paint(Graphics2D g2) {
 		   
 		    //g2.setPaint(Color.WHITE);
 	        //g2.fill( new Ellipse2D.Double(x,y,dim,dim));
-		    g2.setPaint(Color.BLACK);
+		    
+	        
+	        if(lit_up) {
+	        	light_up(g2);
+	        	turn_off();
+	        }
+	        
+	        g2.setPaint(Color.BLACK);
 		    g2.draw( new Ellipse2D.Double(x,y,dim,dim));
 		   		    
 	        //MODIFICARE IL FONT DEI NUMERI ALL'INTERNO DEGLI HOST
 	        g2.setPaint(Color.BLACK);
-	        drawCenteredString(g2,Integer.toString(id + 1),new Ellipse2D.Double(x,y,dim,dim) , g2.getFont());    
+	        drawCenteredString(g2,Integer.toString(id + 1),new Ellipse2D.Double(x,y,dim,dim) , g2.getFont());
 	   }
 	   /**
 	    * Draw a String centered in the middle of a Rectangle.
@@ -174,13 +210,11 @@ public class Visual extends JPanel {
 	public void loadLink (ConnectivityMatrix<Boolean> cm) {
 		   link = cm; //va fatta la deep copy
 	 }
+
 	
-	public void loadConnection (HashMap<Integer,List<Integer>> ca_tot) {
-		  ca = ca_tot;
-	}
-	
-	public void color_ca (Color c) {
-		 color_ca = c;
+	public void reset_color (Graphics g) {
+		Graphics2D g2 = (Graphics2D) g;
+		 g2.setPaint(Color.BLACK);
 	}
 
 	private void drawLink(Graphics g) {
@@ -207,8 +241,9 @@ public class Visual extends JPanel {
 				}
 			}
 	 }
-	private void drawConnection(Graphics g,int start,int end) {
-		Graphics2D g2 = (Graphics2D) g;
+	
+	public void drawConnection(int start,int end,Color c) {
+		Graphics2D g2 = OSG;
 		double x1;
 		double y1;
 		double x2;
@@ -216,7 +251,7 @@ public class Visual extends JPanel {
 		Point2D from;
 		Point2D to;
 		double d = host.dim;	
-		g2.setPaint(color_ca);				
+		g2.setPaint(c);		
 				x1 = hosts.get(start).getX();
 				y1 = hosts.get(start).getY();
 				x2 = hosts.get(end).getX();
@@ -226,49 +261,20 @@ public class Visual extends JPanel {
 					quadto(from,to);
 					//disegna la linea
 					g2.setStroke(new BasicStroke(2.0f)); // g2 is an instance of Graphics2D
-					drawArrowLine(g2,from.getX(),from.getY(),to.getX(),to.getY(),15,7);
+					drawArrowLine(g2,from.getX(),from.getY(),to.getX(),to.getY(),15,7,c);
 				    g2.setStroke(new BasicStroke(1)); //reimposta lo spessore della linea a 1
+					reset_color(g2);
 	
 }
-	
-	private void drawConnection(Graphics g, HashMap <Integer, List<Integer>> connection) {
-		Graphics2D g2 = (Graphics2D) g;
-		double x1;
-		double y1;
-
-		
-		Point2D from;
-		Point2D to;
-		
-		double d = host.dim;
-		
-		
-		g2.setPaint(color_ca);
-		for(int i = 0; i < n_host; i++) {
-			int id = i + 1; 
-			
-			List<Integer> Ca = connection.get(id);
-			if(Ca != null) {
-				//carica le coordinate del host da cui parte la connessione
-				
-				x1 = hosts.get(i).getX();
-				y1 = hosts.get(i).getY();	
-				ListIterator<Integer> il = Ca.listIterator();
-				while(il.hasNext()) {
-					from = new Point2D.Double(x1 + d/2 ,y1 + d/2);
-					//carica le coordinate del host a cui arriva la connessione
-					int host_to = il.next();
-					to = new Point2D.Double(hosts.get(host_to - 1).getX() + d/2,hosts.get(host_to - 1).getY()+ d/2);				
-					quadto(from,to);
-					//disegna la linea
-					g2.setStroke(new BasicStroke(2.0f)); // g2 is an instance of Graphics2D
-					drawArrowLine(g2,from.getX(),from.getY(),to.getX(),to.getY(),15,7);
-				}
-				    g2.setStroke(new BasicStroke(1)); //reimposta lo spessore della linea a 1
-			}
-		}
+	public void lightsHost(int start,int end) {
+		Graphics2D g2 = OSG;
+		hosts.get(start).turn_on();
+	    hosts.get(end).turn_on();
+	    reset_color(g2);
 		
 	}
+	
+
 	/**
 	 * Draw an arrow line between two points.
 	 * @param g the graphics component.
@@ -279,7 +285,7 @@ public class Visual extends JPanel {
 	 * @param d  the width of the arrow.
 	 * @param h  the height of the arrow.
 	 */
-	private void drawArrowLine(Graphics g, double x1, double y1, double x2, double y2, double d, double h) {
+	private void drawArrowLine(Graphics g, double x1, double y1, double x2, double y2, double d, double h,Color c) {
 		Graphics2D g2 = (Graphics2D) g;
 		Path2D.Double p = new Path2D.Double();
 	    double dx = x2 - x1, dy = y2 - y1;
@@ -304,7 +310,7 @@ public class Visual extends JPanel {
 	    g2.setPaint(Color.BLACK);
 	    g2.setStroke(new BasicStroke(1));
 	    g2.draw(p);
-	    g2.setPaint(Color.YELLOW);
+	    g2.setPaint(c);
 	    g2.setStroke(new BasicStroke(2.0f));
 	  
 	}
@@ -361,33 +367,32 @@ public class Visual extends JPanel {
 
    protected void paintComponent(Graphics g) {
 	   super.paintComponent(g);
+	  
 	   Graphics2D g2 = (Graphics2D)g;
 	   
 	   //abilità antialiasing
 	   g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 			   RenderingHints.VALUE_ANTIALIAS_ON);
 	   
-	 
 	   g2.setPaint(Color.WHITE);
-	   g2.fill(new Rectangle(0, 0,getWidth() - 1,getHeight() - 1));
-	   
-	   
+	   g2.fillRect(0, 0,getWidth()-1,getHeight()-1);
+	
 	   if(link != null) {drawLink(g);};
 
-	   if(ca != null) { 
-		   color_ca(Color.YELLOW); 
-		   drawConnection(g,ca);
-		}
-
+	   g2.setPaint(Color.BLACK);
+	   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
 	   
+   
+	   g.drawImage(OSC,0,0,null);
+	   Graphics2D g3 = (Graphics2D)g.create();
 	   
+	   OSG.clearRect(0, 0,getWidth()-1,getHeight()-1);
 	   for (int i = 0; i < n_host; i++) {
 		   hosts.get(i).paint(g2);
 	   }
 	   
-	   g2.setPaint(Color.BLACK);
-	   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
    }
+   
 
  
 	    

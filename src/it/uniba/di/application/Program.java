@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Panel;
 import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -17,24 +19,33 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.Spliterator;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextPane;
+import javax.swing.ListModel;
 import javax.swing.SpinnerNumberModel;
 
 import it.uniba.di.parser.AODVParser;
@@ -46,10 +57,13 @@ import it.uniba.di.support.structures.ConnectivityMatrix;
 public class Program extends Utility {
 	private JFrame s_screen;
 	private JFrame frameALA;
+	private HashMap<Integer, List<connection_attempt>> pending;
 	public static String fileName = null;
 	private static String modelName = null;
 	public static List selectedParameter = new ArrayList<>();
 	public static java.awt.List progressList = new java.awt.List();
+    private java.awt.List pendingList;
+    
 	public static Choice choice = new Choice();
 	public static JScrollPane scrollPne;
 	private Date executionDate;
@@ -86,6 +100,7 @@ public class Program extends Utility {
 	 * Create the application.
 	 */
 	public Program() {
+		pending =  new HashMap<Integer,List<connection_attempt>> ();
 		initialize();
 	}
 
@@ -214,7 +229,7 @@ public class Program extends Utility {
 		
 		
 		int panelh = (550*3/4) - 70;
-		int panelw = (1200/2) - 50;
+		int panelw = (1200/2) - 200;
 		int y_pos = 5;
 		int x_pos = 5;
 
@@ -225,7 +240,7 @@ public class Program extends Utility {
 		s_screen.setTitle("Connections");
 		s_screen.getContentPane().setLayout(null);
 		s_screen.setBounds((int) ((dimension.getWidth() - 1200) / 2),
-		(0), panelw * 2 + 30, panelh * 2 + 50);
+		(0), panelw * 3 + 30, panelh * 2 + 50);
 		s_screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		s_screen.setResizable(false);
 		
@@ -237,17 +252,36 @@ public class Program extends Utility {
 		
 		Visual t_panel  = new Visual(panelw , panelh);
 		t_panel.setBounds(panelw + 10 ,panelh + 10, panelw , panelh);
- 
+		
+		Visual q_panel  = new Visual(panelw , panelh);
+		q_panel.setBounds(panelw + 10 ,y_pos,panelw, panelh);
+		
+		
+		JPanel pending_panel = new JPanel(null);
+        pendingList = new java.awt.List();
+		pendingList.setBounds(0,0,panelw - 5 , panelh);
+		pendingList.setVisible(true);
+	    pending_panel.add(pendingList);
+	    pending_panel.setBounds(2 * panelw + 15,y_pos,panelw - 5 , panelh);
+	    pending_panel.setVisible(true);
+	    
+	    
+	    
+		
 	    s_screen.getContentPane().add(Gs);
 		s_screen.getContentPane().add(s_panel);
 		s_screen.getContentPane().add(t_panel);
+		s_screen.getContentPane().add(q_panel);
+		s_screen.getContentPane().add(pending_panel);
+		
+		
+		
 
-		scrollPne.setBounds(panelw + 10 ,y_pos,panelw, panelh);
+		scrollPne.setBounds(2 * panelw + 15 ,panelh + 10, panelw - 5 , panelh);
 		scrollPne.setVisible(true);
 		scrollPne.setAutoscrolls(true);
+		
 		s_screen.getContentPane().add(scrollPne);
-		
-		
 		s_screen.setBackground(Color.LIGHT_GRAY);
 		
 		startButton.addMouseListener(new MouseAdapter() {
@@ -256,11 +290,13 @@ public class Program extends Utility {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
+						
 						s_screen.setVisible(true);
 						int n_host = (int) fieldHost.getValue();
 						Gs.setNumberHost(n_host);
 						s_panel.setNumberHost(n_host);
 						t_panel.setNumberHost(n_host);
+						q_panel.setNumberHost(n_host);
 						String selectedProtocol = choice.getSelectedItem();
 						if ((int) fieldSession.getValue() > 0) {
 							switch (selectedProtocol) {
@@ -386,11 +422,14 @@ public class Program extends Utility {
 										if (isSimulationOk) {
 											HashMap<String, Integer> metrics = null;
 											HashMap<Integer, List<Integer>> ca_tot = null;
-											HashMap<Integer, List<List<Integer>>> ca_success = null;
+											
+											
 											switch (selectedProtocol) {
 											case "AODV":
 												metrics = aodvParser.parser(simulationDir + "\\logs\\out.txt");
 												ca_tot = aodvParser.getTot_ca();
+												load_ca_tot(pending,ca_tot,(int) fieldRREPTimeout.getValue());
+												LinkedList <Integer> p = new LinkedList<Integer>();
 												if (moveCounter > 1 && Integer
 														.valueOf(metrics.get(AODVParser.RT_SIZE)) < metricsList
 																.get(metricsList.size() - 1).get(AODVParser.RT_SIZE)) {
@@ -434,21 +473,27 @@ public class Program extends Utility {
 												break;
 											}
 											
-											Gs.loadLink(connectivityMatrix);
-										    s_panel.loadConnection(ca_tot);
-										    ca_success = findPaths(connectivityMatrix,n_host,ca_tot);
+											Gs.loadLink(connectivityMatrix);						   
+										    for (int i = 1; i < n_host + 1; i++) {
+										    	int host_to;
+										    	if(ca_tot.containsKey(i)) {
+										    		drawConnections(s_panel,i,ca_tot.get(i),Color.YELLOW);
+										    	}
+										    }
+										    System.out.println(pending);
+										    pendingList.removeAll();
+										    processCa(t_panel,q_panel,connectivityMatrix,pending);
 										    
-											System.out.println(ca_success);
 											s_panel.repaint();
+											t_panel.repaint();
+											q_panel.repaint();
 											Gs.repaint();
 										
 											AODVParser.showOut(simulationDir + "\\logs\\out.txt");
 											
 											/*
 											 * mostra per 30 secondi il file out.txt su un JFrame
-											 */
-										
-											
+											 */		
 										}
 										debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "
 												+ isSimulationOk);
@@ -798,25 +843,107 @@ public class Program extends Utility {
 			displayInfo("ERROR in creating the connectivity matrix");
 		}
 	}
+	
 	//la numerazione degli host parte da 1
-	 private HashMap<Integer, List<List<Integer>> >findPaths(ConnectivityMatrix cm,int n_host,HashMap<Integer, List<Integer>> ca_tot){
-		  HashMap<Integer, List<List<Integer>> >ca_success  = new  HashMap<Integer, List<List<Integer>>>();
-		  ListIterator<Integer> il = null;
-		    int host_to;
+	 private void processCa(Visual s,Visual f,ConnectivityMatrix cm,HashMap<Integer, List<connection_attempt>> pending) {
+		    ListIterator<connection_attempt> il = null;
+		    int from;
+		    int to;
+		   
 		    LinkedList<Integer> path;
-		    for(int i = 1; i <= n_host; i++) {
-		    	if(ca_tot.containsKey(i)) {
-		    		ca_success.put(i, new LinkedList<List<Integer>> ());
-		    		il = ca_tot.get(i).listIterator();
-		    		while(il.hasNext()) {
-			    		host_to = il.next();
-			    		path = cm.findRoute(i,host_to);
-			    		if(path != null) {
-			    			ca_success.get(i).add(path);
-			    		}
-			    	}
-		    	}										    
-		    }
-		    return ca_success;
-    }
+		    Set<Integer> key = pending.keySet();
+			Iterator<Integer> is = key.iterator();
+		    while (is.hasNext()) {
+		    	from = is.next();
+		    	il = pending.get(from).listIterator();
+		    	while(il.hasNext()) { 
+		    		connection_attempt ca = il.next();
+		    		path = cm.findRoute(ca.getInit(),ca.getD());
+		    		
+		    		if(path != null) {
+		    				s.lightsHost(ca.getInit() - 1, ca.getD() - 1);
+		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ") -- connected");
+		    			    System.out.println(path);
+			    			drawpath(s,path,Color.GREEN);
+			    			il.remove();
+			    			
+		    		}else {
+		    			ca.decrase_t();
+		    			if(ca.getTimeOut() == 0) {
+		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ") -- failed");
+		    				f.drawConnection(ca.getInit() - 1, ca.getD() - 1,Color.RED);
+		    				il.remove();
+		    			}else {
+		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ")");
+		    			}
+		    		}
+		    	
+		    	}
+		   
+		}
+	}
+	 
+	 private void drawpath(Visual s,List<Integer> to,Color c) {
+		 int from;
+		 int h_to;
+		 
+		  ListIterator<Integer> ip = to.listIterator();
+		  from  = ip.next();
+		  while(ip.hasNext()) {
+				h_to = ip.next(); 
+				s.drawConnection(from - 1, h_to - 1,c);
+				from = h_to;
+			} 
+		 
+	 }
+	 
+    
+
+	 private void drawConnections(Visual s,int start,List<Integer> to,Color c){
+			int host_to;
+			ListIterator<Integer> it = to.listIterator();
+			while(it.hasNext()) {
+				host_to = it.next();
+				s.drawConnection(start - 1, host_to - 1,c);
+			}
+		}
+	 
+	 private void load_ca_tot(HashMap<Integer,List<connection_attempt>> pending,HashMap<Integer, List<Integer>> ca_tot,int s_t) {
+		 List<Integer> p;
+		 int from;
+		 int to;
+		 Set<Integer> s = ca_tot.keySet();
+		 Iterator<Integer> is = s.iterator();
+		 while (is.hasNext()) {
+			 from  = is.next();
+			 p = ca_tot.get(from);
+			 ListIterator<Integer> it = p.listIterator();
+			 if(!pending.containsKey(from)) {pending.put(from, new LinkedList<connection_attempt> ());}
+			 while(it.hasNext()) {
+					 to =  it.next();
+					 pending.get(from).add(new connection_attempt (from,to,s_t));
+			 }	 
+		     
+	 }
+   }
+}
+class connection_attempt {
+	private int timeOut;
+	private int initiator;
+	private int destination;
+	
+	connection_attempt(int i,int d,int t){
+		initiator = i;
+		destination = d;
+		timeOut = t;
+	}
+	public void decrase_t(){
+		if(timeOut > 0) {
+			timeOut--;
+		}
+		
+	}
+	public int getInit() {return initiator;}
+	public int getD() {return destination;}
+	public int getTimeOut() {return timeOut;}
 }

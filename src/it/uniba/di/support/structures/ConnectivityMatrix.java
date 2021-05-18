@@ -166,12 +166,10 @@ public class ConnectivityMatrix<T> {
 	private void findpath (int start,int end, item_c [] tree,LinkedList<Integer> path) {
 		
 		if (end == start){
-			
-			//path.addLast(start + 1);
+			path.addLast(start + 1);
 			
 		}else if (tree[end].parent == -1) {
-			
-			path = null;
+			path.clear();
 		}else {
 			findpath(start,tree[end].parent,tree,path);
 			path.addLast(end + 1);
@@ -180,10 +178,17 @@ public class ConnectivityMatrix<T> {
 	}
 	// la numerazione degli host nel path parte da 1
 	public LinkedList<Integer> findRoute(int start,int end) {
-		LinkedList<Integer> path = new LinkedList<Integer> ();
-		start = start - 1;
-		end = end - 1;
-		findpath(start,end,buildtree(start),path);
+		LinkedList<Integer> path =  new LinkedList<Integer> ();
+		int s = start - 1;
+		int e = end - 1;
+		
+		
+		item_c [] tree = buildtree(s);
+		findpath(s,e,tree,path);
+		if(path.isEmpty()) 
+		{
+			return null;
+		}
 		return path;
 	}
 	

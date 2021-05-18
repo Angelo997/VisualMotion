@@ -394,7 +394,7 @@ definitions:
 									par
 										r_GenerateRouteReq[$dest]
 										waitingForRouteTo(self, $dest) := true
-										waitingForRouteToTmp(self,$dest) := 5
+										waitingForRouteToTmp(self,$dest) := 2
 									endpar									
 								endif
 							endif
@@ -611,6 +611,8 @@ definitions:
 	/* START PAR */
 			rule r_MemoryManager =
 			par
+			isLinked(host1,host2):=true
+			isLinked(host2,host1):=true
 			isLinked(host1,host3):=true
 			isLinked(host3,host1):=true
 			isLinked(host1,host4):=true
@@ -621,22 +623,29 @@ definitions:
 			isLinked(host4,host2):=true
 			isLinked(host2,host5):=true
 			isLinked(host5,host2):=true
-			isLinked(host4,host5):=true
-			isLinked(host5,host4):=true
 
-			curSeqNum(host1):=1
-			lastKnownDestSeqNum(host1,host4):=undef
-			localReqCount(host1):=1
-			receivedReq(host1):=[(1,host1)]
-			waitingForRouteTo(host1,host4):=true
-			waitingForRouteToTmp(host1,host4):=5
+			curSeqNum(host3):=1
+			lastKnownDestSeqNum(host3,host1):=undef
+			lastKnownDestSeqNum(host3,host4):=undef
+			lastKnownDestSeqNum(host3,host5):=undef
+			localReqCount(host3):=1
+			receivedReq(host3):=[(1,host3)]
+			waitingForRouteTo(host3,host1):=true
+			waitingForRouteTo(host3,host4):=true
+			waitingForRouteTo(host3,host5):=true
+			waitingForRouteToTmp(host3,host1):=2
+			waitingForRouteToTmp(host3,host4):=2
+			waitingForRouteToTmp(host3,host5):=2
 
 
-			extend Message with $_message1 do
+			extend Message with $_message1,$_message2,$_message3 do
 				par
-									isConsumed(host5,$_message1):=false
-					messageRREQ($_message1):=(host1,1,0,host4,undef,1,host1)
+									messageRREQ($_message1):=(host3,1,0,host5,undef,1,host3)
+					messageRREQ($_message2):=(host3,1,0,host4,undef,1,host3)
+					messageRREQ($_message3):=(host3,1,0,host1,undef,1,host3)
 					messageType($_message1):=RREQ
+					messageType($_message2):=RREQ
+					messageType($_message3):=RREQ
 				endpar
 	/* END PAR */
 			endpar
