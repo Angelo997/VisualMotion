@@ -394,7 +394,7 @@ definitions:
 									par
 										r_GenerateRouteReq[$dest]
 										waitingForRouteTo(self, $dest) := true
-										waitingForRouteToTmp(self,$dest) := 2
+										waitingForRouteToTmp(self,$dest) := 5
 									endpar									
 								endif
 							endif
@@ -611,41 +611,57 @@ definitions:
 	/* START PAR */
 			rule r_MemoryManager =
 			par
-			isLinked(host1,host2):=true
-			isLinked(host2,host1):=true
 			isLinked(host1,host3):=true
 			isLinked(host3,host1):=true
 			isLinked(host1,host4):=true
 			isLinked(host4,host1):=true
-			isLinked(host1,host5):=true
-			isLinked(host5,host1):=true
-			isLinked(host2,host4):=true
-			isLinked(host4,host2):=true
+			isLinked(host2,host3):=true
+			isLinked(host3,host2):=true
 			isLinked(host2,host5):=true
 			isLinked(host5,host2):=true
+			isLinked(host3,host4):=true
+			isLinked(host4,host3):=true
 
-			curSeqNum(host3):=1
-			lastKnownDestSeqNum(host3,host1):=undef
-			lastKnownDestSeqNum(host3,host4):=undef
-			lastKnownDestSeqNum(host3,host5):=undef
-			localReqCount(host3):=1
-			receivedReq(host3):=[(1,host3)]
-			waitingForRouteTo(host3,host1):=true
-			waitingForRouteTo(host3,host4):=true
-			waitingForRouteTo(host3,host5):=true
-			waitingForRouteToTmp(host3,host1):=2
-			waitingForRouteToTmp(host3,host4):=2
-			waitingForRouteToTmp(host3,host5):=2
+			curSeqNum(host1):=1
+			curSeqNum(host5):=1
+			lastKnownDestSeqNum(host1,host4):=undef
+			lastKnownDestSeqNum(host5,host2):=undef
+			lastKnownDestSeqNum(host5,host3):=undef
+			lastKnownDestSeqNum(host5,host4):=undef
+			localReqCount(host1):=1
+			localReqCount(host5):=1
+			receivedReq(host1):=[(1,host1)]
+			receivedReq(host5):=[(1,host5)]
+			waitingForRouteTo(host1,host4):=true
+			waitingForRouteTo(host5,host2):=true
+			waitingForRouteTo(host5,host3):=true
+			waitingForRouteTo(host5,host4):=true
+			waitingForRouteToTmp(host1,host4):=5
+			waitingForRouteToTmp(host5,host2):=5
+			waitingForRouteToTmp(host5,host3):=5
+			waitingForRouteToTmp(host5,host4):=5
 
 
-			extend Message with $_message1,$_message2,$_message3 do
+			extend Message with $_message1,$_message2,$_message3,$_message4 do
 				par
-									messageRREQ($_message1):=(host3,1,0,host5,undef,1,host3)
-					messageRREQ($_message2):=(host3,1,0,host4,undef,1,host3)
-					messageRREQ($_message3):=(host3,1,0,host1,undef,1,host3)
+									isConsumed(host1,$_message1):=false
+					isConsumed(host1,$_message2):=false
+					isConsumed(host1,$_message3):=false
+					isConsumed(host2,$_message1):=false
+					isConsumed(host2,$_message2):=false
+					isConsumed(host2,$_message3):=false
+					isConsumed(host4,$_message1):=false
+					isConsumed(host4,$_message2):=false
+					isConsumed(host4,$_message3):=false
+					isConsumed(host5,$_message4):=false
+					messageRREQ($_message1):=(host5,1,0,host4,undef,1,host5)
+					messageRREQ($_message2):=(host5,1,0,host3,undef,1,host5)
+					messageRREQ($_message3):=(host5,1,0,host2,undef,1,host5)
+					messageRREQ($_message4):=(host1,1,0,host4,undef,1,host1)
 					messageType($_message1):=RREQ
 					messageType($_message2):=RREQ
 					messageType($_message3):=RREQ
+					messageType($_message4):=RREQ
 				endpar
 	/* END PAR */
 			endpar

@@ -45,7 +45,6 @@ import it.uniba.di.support.structures.ConnectivityMatrix;
 public class Visual extends JPanel {
 	private double width; 
 	private double height;
-	
 	private int n_host = 0;
 	private HashMap<Integer,host> hosts; //tempo di ritrovamento degli elementi costante
 
@@ -84,7 +83,7 @@ public class Visual extends JPanel {
 		
 		width = w;
 		height = h;
-		
+	
 	}
 	
 	public void setNumberHost(int n){
@@ -358,7 +357,7 @@ public class Visual extends JPanel {
 			   c.setLocation(c.getX() - dim, c.getY()  );
 			}else {
 			   p.setLocation(p.getX() - dim, p.getY());
-			   c.setLocation(c.getX() + dim, c.getY()  );
+			   c.setLocation(c.getX() + dim, c.getY());
 
 			}
 		}
@@ -370,31 +369,30 @@ public class Visual extends JPanel {
 	  
 	   Graphics2D g2 = (Graphics2D)g;
 	   
+	   
 	   //abilità antialiasing
 	   g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 			   RenderingHints.VALUE_ANTIALIAS_ON);
 	   
 	   g2.setPaint(Color.WHITE);
 	   g2.fillRect(0, 0,getWidth()-1,getHeight()-1);
-	
+	  
+	   
 	   if(link != null) {drawLink(g);};
 
 	   g2.setPaint(Color.BLACK);
 	   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
-	   
-   
+	
+	  
 	   g.drawImage(OSC,0,0,null);
 	   Graphics2D g3 = (Graphics2D)g.create();
 	   
 	   OSG.clearRect(0, 0,getWidth()-1,getHeight()-1);
 	   for (int i = 0; i < n_host; i++) {
 		   hosts.get(i).paint(g2);
-	   }
-	   
-   }
-   
-
- 
-	    
+	   }  
+   }	    
 }
+
+
 

@@ -385,7 +385,6 @@ private static void createJFrameOut() {
 			
 	    try {
 	    	synchronized(out){
-
 	    	 out.wait();
 	    	}
 	    	
@@ -426,7 +425,7 @@ private static void createJFrameOut() {
 					}
 					
 					if (line.startsWith("isLinked")){
-						System.out.println(line);
+						//System.out.println(line);
 					}
 
 					if (line.startsWith("rreq_update") || line.startsWith("rrep_update")

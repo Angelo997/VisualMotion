@@ -228,42 +228,76 @@ public class Program extends Utility {
 		JTextPane textPane_2 = new JTextPane();
 		
 		
-		int panelh = (550*3/4) - 70;
+		int panelh = (550*3/4) - 90;
 		int panelw = (1200/2) - 200;
-		int y_pos = 5;
+		int y_pos = 5 + 15;
 		int x_pos = 5;
-
-		Visual Gs = new Visual(panelw , panelh);
+		int x_pos2 = (1200/2) - 200 + 10;
+		int y_pos2 = (550*3/4) - 80 + 35;
+		
 
 		//secondo pannello
 	    s_screen = new JFrame();
 		s_screen.setTitle("Connections");
 		s_screen.getContentPane().setLayout(null);
 		s_screen.setBounds((int) ((dimension.getWidth() - 1200) / 2),
-		(0), panelw * 3 + 30, panelh * 2 + 50);
+		(0), ((1200/2) - 200) * 3 + 30,((550*3/4) - 70) * 2 + 50);
 		s_screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		s_screen.setResizable(false);
 		
+	
+		JLabel desc_gs = new JLabel("Mobility Model");
+		desc_gs.setForeground(Color.BLACK);
+		desc_gs.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
+		desc_gs.setBounds(x_pos, y_pos - 15, 150, 15);
+		desc_gs.setVisible(true);
+		s_screen.getContentPane().add(desc_gs);
+		Visual Gs = new Visual(panelw , panelh);
 		Gs.setBounds(x_pos, y_pos, panelw , panelh);
 		
+		JLabel desc_s = new JLabel("Connection Attempts");
+		desc_s.setForeground(Color.BLACK);
+		desc_s.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
+		desc_s.setBounds(x_pos, y_pos2 - 15, 150, 15);
+		desc_s.setVisible(true);
+		s_screen.getContentPane().add(desc_s);
 		Visual s_panel  = new Visual(panelw, panelh);
-		s_panel.setBounds(x_pos, panelh + 10 ,panelw, panelh);
+		s_panel.setBounds(x_pos, y_pos2,panelw, panelh);
 		
-		
+		JLabel desc_t = new JLabel("Successful Connection");
+		desc_t.setForeground(Color.BLACK);
+		desc_t.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
+		desc_t.setBounds(x_pos2, y_pos2 - 15,150, 15);
+		desc_t.setVisible(true);
+		s_screen.getContentPane().add(desc_t);
 		Visual t_panel  = new Visual(panelw , panelh);
-		t_panel.setBounds(panelw + 10 ,panelh + 10, panelw , panelh);
+		t_panel.setBounds(x_pos2 ,y_pos2, panelw , panelh);
 		
+		JLabel desc_q = new JLabel("Failed Connection");
+		desc_q.setForeground(Color.BLACK);
+		desc_q.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
+		desc_q.setBounds(x_pos2 ,y_pos - 15,150, 15);
+		desc_q.setVisible(true);
+		s_screen.getContentPane().add(desc_q);
 		Visual q_panel  = new Visual(panelw , panelh);
-		q_panel.setBounds(panelw + 10 ,y_pos,panelw, panelh);
+		q_panel.setBounds(x_pos2 ,y_pos,panelw, panelh);
+		
+		JLabel desc_pp = new JLabel("Pending Connections");
+		desc_pp.setForeground(Color.BLACK);
+		desc_pp.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
+		desc_pp.setBounds(2 * x_pos2 - 5,y_pos - 15,150, 15);
+		desc_pp.setVisible(true);
+		s_screen.getContentPane().add(desc_pp);
 		
 		
 		JPanel pending_panel = new JPanel(null);
         pendingList = new java.awt.List();
-		pendingList.setBounds(0,0,panelw - 5 , panelh);
+		pendingList.setBounds(0,0,panelw - 5, panelh);
 		pendingList.setVisible(true);
 	    pending_panel.add(pendingList);
-	    pending_panel.setBounds(2 * panelw + 15,y_pos,panelw - 5 , panelh);
+	    pending_panel.setBounds(2 * x_pos2 - 5,y_pos,panelw , panelh);
 	    pending_panel.setVisible(true);
+	    
 	    
 	    
 	    
@@ -275,9 +309,15 @@ public class Program extends Utility {
 		s_screen.getContentPane().add(pending_panel);
 		
 		
+		 
+		JLabel desc_sp = new JLabel("Moves");
+		desc_sp.setForeground(Color.BLACK);
+		desc_sp.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
+		desc_sp.setBounds(2 * x_pos2 - 5,y_pos2 - 15,150, 15);
+		desc_sp.setVisible(true);
+		s_screen.getContentPane().add(desc_sp);
 		
-
-		scrollPne.setBounds(2 * panelw + 15 ,panelh + 10, panelw - 5 , panelh);
+		scrollPne.setBounds(2 * x_pos2 - 5,y_pos2, panelw , panelh);
 		scrollPne.setVisible(true);
 		scrollPne.setAutoscrolls(true);
 		
@@ -480,7 +520,7 @@ public class Program extends Utility {
 										    		drawConnections(s_panel,i,ca_tot.get(i),Color.YELLOW);
 										    	}
 										    }
-										    System.out.println(pending);
+										    //System.out.println(pending);
 										    pendingList.removeAll();
 										    processCa(t_panel,q_panel,connectivityMatrix,pending);
 										    
@@ -488,12 +528,11 @@ public class Program extends Utility {
 											t_panel.repaint();
 											q_panel.repaint();
 											Gs.repaint();
-										
+										 /* decommentare per mettere in pausa il programma dopo ogni mossa */
+											
 											AODVParser.showOut(simulationDir + "\\logs\\out.txt");
 											
-											/*
-											 * mostra per 30 secondi il file out.txt su un JFrame
-											 */		
+											
 										}
 										debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "
 												+ isSimulationOk);
@@ -863,7 +902,7 @@ public class Program extends Utility {
 		    		if(path != null) {
 		    				s.lightsHost(ca.getInit() - 1, ca.getD() - 1);
 		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ") -- connected");
-		    			    System.out.println(path);
+		    			    //System.out.println(path);
 			    			drawpath(s,path,Color.GREEN);
 			    			il.remove();
 			    			
