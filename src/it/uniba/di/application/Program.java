@@ -1,13 +1,12 @@
 package it.uniba.di.application;
 
-import java.awt.BorderLayout;
+
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Panel;
+
 import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -19,7 +18,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,21 +30,20 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Spliterator;
+
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
+
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextPane;
-import javax.swing.ListModel;
+
 import javax.swing.SpinnerNumberModel;
 
 import it.uniba.di.parser.AODVParser;
@@ -63,7 +61,7 @@ public class Program extends Utility {
 	public static List selectedParameter = new ArrayList<>();
 	public static java.awt.List progressList = new java.awt.List();
     private java.awt.List pendingList;
-    
+    private Boolean ispaused;
 	public static Choice choice = new Choice();
 	public static JScrollPane scrollPne;
 	private Date executionDate;
@@ -100,7 +98,7 @@ public class Program extends Utility {
 	 * Create the application.
 	 */
 	public Program() {
-		pending =  new HashMap<Integer,List<connection_attempt>> ();
+		
 		initialize();
 	}
 
@@ -108,6 +106,7 @@ public class Program extends Utility {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		ispaused = false;
 		int dim_label = 20;
 		frameALA = new JFrame();
 		frameALA.setResizable(false);
@@ -244,8 +243,7 @@ public class Program extends Utility {
 		(0), ((1200/2) - 200) * 3 + 30,((550*3/4) - 70) * 2 + 50);
 		s_screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		s_screen.setResizable(false);
-		
-	
+			
 		JLabel desc_gs = new JLabel("Mobility Model");
 		desc_gs.setForeground(Color.BLACK);
 		desc_gs.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
@@ -317,97 +315,142 @@ public class Program extends Utility {
 		desc_sp.setVisible(true);
 		s_screen.getContentPane().add(desc_sp);
 		
-		scrollPne.setBounds(2 * x_pos2 - 5,y_pos2, panelw , panelh);
+		scrollPne.setBounds(2 * x_pos2 - 5,y_pos2, panelw , 2*(panelh/3));
 		scrollPne.setVisible(true);
 		scrollPne.setAutoscrolls(true);
-		
 		s_screen.getContentPane().add(scrollPne);
 		s_screen.setBackground(Color.LIGHT_GRAY);
 		
-		startButton.addMouseListener(new MouseAdapter() {
+		int x_scrollpne = (2 * x_pos2) - 5 + panelw/2; 
+		int pauseby = y_pos2 + 2*(panelh/3) + panelh/6  - 20;
+		JButton pauseb = new JButton("PAUSE");
+		pauseb.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
+		pauseb.setBounds(x_scrollpne - (176/2),pauseby, 176, 41);
+		
+		pauseb.setVisible(true);
+		pauseb.setEnabled(true);
+		s_screen.getContentPane().add(pauseb);
+		
+		
+		
+		
+		
+		
+		
+		
+		Thread computation = new Thread(new Runnable() {
 			@Override
-			public void mousePressed(MouseEvent e) {
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						
-						s_screen.setVisible(true);
-						int n_host = (int) fieldHost.getValue();
-						Gs.setNumberHost(n_host);
-						s_panel.setNumberHost(n_host);
-						t_panel.setNumberHost(n_host);
-						q_panel.setNumberHost(n_host);
-						String selectedProtocol = choice.getSelectedItem();
-						if ((int) fieldSession.getValue() > 0) {
+			public void run() {
+				s_screen.setVisible(true);
+				int n_host = (int) fieldHost.getValue();
+				Gs.setNumberHost(n_host);
+				s_panel.setNumberHost(n_host);
+				t_panel.setNumberHost(n_host);
+				q_panel.setNumberHost(n_host);
+				String selectedProtocol = choice.getSelectedItem();
+				if ((int) fieldSession.getValue() > 0) {
+					switch (selectedProtocol) {
+					case "AODV":
+						fileName = AODV_PATH_AND_FILENAME;
+						modelName = AODV_MODEL_PATH_AND_FILENAME;
+						break;
+					case "N-AODV":
+						fileName = NAODV_PATH_AND_FILENAME;
+						modelName = NAODV_MODEL_PATH_AND_FILENAME;
+						break;
+					case "BN-AODV":
+						fileName = BNAODV_PATH_AND_FILENAME;
+						modelName = BNAODV_MODEL_PATH_AND_FILENAME;
+						break;
+					default:
+						break;
+					}
+					displayInfo("Loaded model '" + modelName + "'. [" + dateFormat.format(new Date()) + "]");
+					stopButton.setEnabled(true);
+					startButton.setEnabled(false);
+					choice.setEnabled(false);
+				
+
+					try {
+						displayInfo("Creating simulation directory and sub directories...");
+						String simulationTmpStr = dateFileFormat.format(new Date());
+						String simulationDir = "result\\simulation_" + simulationTmpStr;
+						new File(simulationDir + "\\logs").mkdirs();
+						new File(simulationDir + "\\sessions").mkdirs();
+						new File(simulationDir + "\\conf").mkdirs();
+
+						File configFile = new File(simulationDir + "\\conf\\parameters.conf");
+						try (FileWriter fw = new FileWriter(configFile);
+								BufferedWriter bw = new BufferedWriter(fw)) {
+							bw.write("Model=" + selectedProtocol);
+							bw.write("\nNumber_of_sessions=" + (int) fieldSession.getValue());
+							bw.write("\nNumber_of_hosts=" + (int) fieldHost.getValue());
+							bw.write("\nInitial_connectivity=" + textPane_1.getText());
+							bw.write("\nMobility_level=" + textPane.getText());
+							bw.write("\nSession_duration=" + (int) fieldSessionTimeout.getValue());
+							bw.write("\nInitiator_probability=" + textPane_2.getText());
+							bw.write("\nRREP_timeout=" + fieldRREPTimeout.getValue());
+						} catch (Exception ex) {
+							error(ex);
+						}
+
+						displayInfo("Executing ASMETA model...");
+						long start = System.currentTimeMillis();
+						int max = Integer.parseInt(fieldSession.getValue().toString());
+						isSimulationOk = true;
+						BufferedReader br = null;
+						int sessionTimeout = (int) fieldSessionTimeout.getValue();
+						AODVParser aodvParser = new AODVParser();
+						NAODVParser naodvParser = new NAODVParser();
+						// TODO
+						ConnectivityMatrix<Boolean> connectivityMatrix = new ConnectivityMatrix<Boolean>(
+								Boolean.class, (int) fieldHost.getValue(), false, false);
+						List<Boolean[]> cmList = new ArrayList<>();
+						List<Map<String, Integer>> metricsList = new ArrayList<>();
+						pending =  new HashMap<Integer,List<connection_attempt>> ();
+						for (int session = 1; session <= max; session++) {
+							boolean retryingMove = false;
+							metricsList = new ArrayList<>();
+							cmList = new ArrayList<>();
 							switch (selectedProtocol) {
 							case "AODV":
-								fileName = AODV_PATH_AND_FILENAME;
-								modelName = AODV_MODEL_PATH_AND_FILENAME;
+								AODVParser.reset();
 								break;
 							case "N-AODV":
-								fileName = NAODV_PATH_AND_FILENAME;
-								modelName = NAODV_MODEL_PATH_AND_FILENAME;
+								NAODVParser.reset();
 								break;
 							case "BN-AODV":
-								fileName = BNAODV_PATH_AND_FILENAME;
-								modelName = BNAODV_MODEL_PATH_AND_FILENAME;
+								// TODO
 								break;
 							default:
 								break;
 							}
-							displayInfo("Loaded model '" + modelName + "'. [" + dateFormat.format(new Date()) + "]");
-							stopButton.setEnabled(true);
-							startButton.setEnabled(false);
-							choice.setEnabled(false);
-						
-
-							try {
-								displayInfo("Creating simulation directory and sub directories...");
-								String simulationTmpStr = dateFileFormat.format(new Date());
-								String simulationDir = "result\\simulation_" + simulationTmpStr;
-								new File(simulationDir + "\\logs").mkdirs();
-								new File(simulationDir + "\\sessions").mkdirs();
-								new File(simulationDir + "\\conf").mkdirs();
-
-								File configFile = new File(simulationDir + "\\conf\\parameters.conf");
-								try (FileWriter fw = new FileWriter(configFile);
-										BufferedWriter bw = new BufferedWriter(fw)) {
-									bw.write("Model=" + selectedProtocol);
-									bw.write("\nNumber_of_sessions=" + (int) fieldSession.getValue());
-									bw.write("\nNumber_of_hosts=" + (int) fieldHost.getValue());
-									bw.write("\nInitial_connectivity=" + textPane_1.getText());
-									bw.write("\nMobility_level=" + textPane.getText());
-									bw.write("\nSession_duration=" + (int) fieldSessionTimeout.getValue());
-									bw.write("\nInitiator_probability=" + textPane_2.getText());
-									bw.write("\nRREP_timeout=" + fieldRREPTimeout.getValue());
-								} catch (Exception ex) {
-									error(ex);
-								}
-
-								displayInfo("Executing ASMETA model...");
-								long start = System.currentTimeMillis();
-								int max = Integer.parseInt(fieldSession.getValue().toString());
-								isSimulationOk = true;
-								BufferedReader br = null;
-								int sessionTimeout = (int) fieldSessionTimeout.getValue();
-								AODVParser aodvParser = new AODVParser();
-								NAODVParser naodvParser = new NAODVParser();
-								// TODO
-								ConnectivityMatrix<Boolean> connectivityMatrix = new ConnectivityMatrix<Boolean>(
-										Boolean.class, (int) fieldHost.getValue(), false, false);
-								List<Boolean[]> cmList = new ArrayList<>();
-								List<Map<String, Integer>> metricsList = new ArrayList<>();
-
-								for (int session = 1; session <= max; session++) {
-									boolean retryingMove = false;
-									metricsList = new ArrayList<>();
-									cmList = new ArrayList<>();
+							
+							
+							displayInfo("Now running session " + session);
+							for (int moveCounter = 1; moveCounter <= sessionTimeout
+									&& isSimulationOk; moveCounter++) {
+								displayInfo("Now running move " + moveCounter);
+								
+								if (!retryingMove) {
 									switch (selectedProtocol) {
 									case "AODV":
-										AODVParser.reset();
+										connectivityMatrix = aodvParser.modelSpecificSetup(
+												(int) fieldHost.getValue(), slider.getValue(),
+												slider_1.getValue(), connectivityMatrix, modelName, fileName,
+												moveCounter, (int) fieldRREPTimeout.getValue(),
+												slider_2.getValue());
+										AODVParser.editAsmFromLog(moveCounter,
+												simulationDir + "\\logs\\out.txt", fileName);
 										break;
 									case "N-AODV":
-										NAODVParser.reset();
+										connectivityMatrix = naodvParser.modelSpecificSetup(
+												(int) fieldHost.getValue(), slider.getValue(),
+												slider_1.getValue(), connectivityMatrix, modelName, fileName,
+												moveCounter, (int) fieldRREPTimeout.getValue(),
+												slider_2.getValue());
+										NAODVParser.editAsmFromLog(moveCounter,
+												simulationDir + "\\logs\\out.txt", fileName);
 										break;
 									case "BN-AODV":
 										// TODO
@@ -415,159 +458,167 @@ public class Program extends Utility {
 									default:
 										break;
 									}
-									
-									
-									displayInfo("Now running session " + session);
-									for (int moveCounter = 1; moveCounter <= sessionTimeout
-											&& isSimulationOk; moveCounter++) {
-										displayInfo("Now running move " + moveCounter);
-										
-										if (!retryingMove) {
-											switch (selectedProtocol) {
-											case "AODV":
-												connectivityMatrix = aodvParser.modelSpecificSetup(
-														(int) fieldHost.getValue(), slider.getValue(),
-														slider_1.getValue(), connectivityMatrix, modelName, fileName,
-														moveCounter, (int) fieldRREPTimeout.getValue(),
-														slider_2.getValue());
-												AODVParser.editAsmFromLog(moveCounter,
-														simulationDir + "\\logs\\out.txt", fileName);
-												break;
-											case "N-AODV":
-												connectivityMatrix = naodvParser.modelSpecificSetup(
-														(int) fieldHost.getValue(), slider.getValue(),
-														slider_1.getValue(), connectivityMatrix, modelName, fileName,
-														moveCounter, (int) fieldRREPTimeout.getValue(),
-														slider_2.getValue());
-												NAODVParser.editAsmFromLog(moveCounter,
-														simulationDir + "\\logs\\out.txt", fileName);
-												break;
-											case "BN-AODV":
-												// TODO
-												break;
-											default:
-												break;
-											}
-										}
-										AsmetasExecutor.run(fileName, simulationDir);
-										if (new File(simulationDir + "\\logs\\err.txt").exists()) {
-											br = new BufferedReader(new FileReader(simulationDir + "\\logs\\err.txt"));
-											if (br.readLine() != null) {
-												displayInfo("ASMETA ERROR FOUND!");
-												isSimulationOk = false;
-											}
-										} else {
-											isSimulationOk = false;
-										}
-										if (isSimulationOk) {
-											HashMap<String, Integer> metrics = null;
-											HashMap<Integer, List<Integer>> ca_tot = null;
-											
-											
-											switch (selectedProtocol) {
-											case "AODV":
-												metrics = aodvParser.parser(simulationDir + "\\logs\\out.txt");
-												ca_tot = aodvParser.getTot_ca();
-												load_ca_tot(pending,ca_tot,(int) fieldRREPTimeout.getValue());
-												LinkedList <Integer> p = new LinkedList<Integer>();
-												if (moveCounter > 1 && Integer
-														.valueOf(metrics.get(AODVParser.RT_SIZE)) < metricsList
-																.get(metricsList.size() - 1).get(AODVParser.RT_SIZE)) {
-													if (!retryingMove) {
-														moveCounter--;
-													}
-													retryingMove = true;
-													displayInfo("Error on execution. Retrying ...");
-													metrics = (HashMap) ((HashMap) metricsList
-															.get(metricsList.size() - 1)).clone();
-													aodvParser.revertMetrics(metrics);
-												} else {
-													retryingMove = false;
-													metricsList.add((HashMap) metrics.clone());
-													cmList.add(connectivityMatrix.deepCopy(Boolean.class));
-												}
-												break;
-											case "N-AODV":
-												metrics = naodvParser.parser(simulationDir + "\\logs\\out.txt");
-												if (moveCounter > 1 && Integer
-														.valueOf(metrics.get(AODVParser.RT_SIZE)) < metricsList
-																.get(metricsList.size() - 1).get(AODVParser.RT_SIZE)) {
-													if (!retryingMove) {
-														moveCounter--;
-													}
-													retryingMove = true;
-													displayInfo("Error on execution. Retrying ...");
-													metrics = (HashMap) ((HashMap) metricsList
-															.get(metricsList.size() - 1)).clone();
-													naodvParser.revertMetrics(metrics);
-												} else {
-													retryingMove = false;
-													metricsList.add((HashMap) metrics.clone());
-													cmList.add(connectivityMatrix.deepCopy(Boolean.class));
-												}
-												break;
-											case "BN-AODV":
-												// TODO
-												break;
-											default:
-												break;
-											}
-											
-											Gs.loadLink(connectivityMatrix);						   
-										    for (int i = 1; i < n_host + 1; i++) {
-										    	int host_to;
-										    	if(ca_tot.containsKey(i)) {
-										    		drawConnections(s_panel,i,ca_tot.get(i),Color.YELLOW);
-										    	}
-										    }
-										    //System.out.println(pending);
-										    pendingList.removeAll();
-										    processCa(t_panel,q_panel,connectivityMatrix,pending);
-										    
-											s_panel.repaint();
-											t_panel.repaint();
-											q_panel.repaint();
-											Gs.repaint();
-										 /* decommentare per mettere in pausa il programma dopo ogni mossa */
-											
-											AODVParser.showOut(simulationDir + "\\logs\\out.txt");
-											
-											
-										}
-										debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "
-												+ isSimulationOk);
+								}
+								AsmetasExecutor.run(fileName, simulationDir);
+								if (new File(simulationDir + "\\logs\\err.txt").exists()) {
+									br = new BufferedReader(new FileReader(simulationDir + "\\logs\\err.txt"));
+									if (br.readLine() != null) {
+										displayInfo("ASMETA ERROR FOUND!");
+										isSimulationOk = false;
 									}
-
-									if (isSimulationOk) {
-										displayInfo("Writing session statistics...");
-										writeSessionStatistics(simulationDir, metricsList, selectedProtocol);
-										writeConnectivityMatrix(simulationDir, cmList, session);
-									} else {
+								} else {
+									isSimulationOk = false;
+								}
+								if (isSimulationOk) {
+									HashMap<String, Integer> metrics = null;
+									HashMap<Integer, List<Integer>> ca_tot = null;
+									
+									
+									switch (selectedProtocol) {
+									case "AODV":
+										metrics = AODVParser.parser(simulationDir + "\\logs\\out.txt");
+										ca_tot = AODVParser.getTot_ca();
+										load_ca_tot(pending,ca_tot,(int) fieldRREPTimeout.getValue());
+										LinkedList <Integer> p = new LinkedList<Integer>();
+										if (moveCounter > 1 && Integer
+												.valueOf(metrics.get(AODVParser.RT_SIZE)) < metricsList
+														.get(metricsList.size() - 1).get(AODVParser.RT_SIZE)) {
+											if (!retryingMove) {
+												moveCounter--;
+											}
+											retryingMove = true;
+											displayInfo("Error on execution. Retrying ...");
+											metrics = (HashMap) ((HashMap) metricsList
+													.get(metricsList.size() - 1)).clone();
+											aodvParser.revertMetrics(metrics);
+										} else {
+											retryingMove = false;
+											metricsList.add((HashMap) metrics.clone());
+											cmList.add(connectivityMatrix.deepCopy(Boolean.class));
+										}
+										break;
+									case "N-AODV":
+										metrics = NAODVParser.parser(simulationDir + "\\logs\\out.txt");
+										if (moveCounter > 1 && Integer
+												.valueOf(metrics.get(AODVParser.RT_SIZE)) < metricsList
+														.get(metricsList.size() - 1).get(AODVParser.RT_SIZE)) {
+											if (!retryingMove) {
+												moveCounter--;
+											}
+											retryingMove = true;
+											displayInfo("Error on execution. Retrying ...");
+											metrics = (HashMap) ((HashMap) metricsList
+													.get(metricsList.size() - 1)).clone();
+											naodvParser.revertMetrics(metrics);
+										} else {
+											retryingMove = false;
+											metricsList.add((HashMap) metrics.clone());
+											cmList.add(connectivityMatrix.deepCopy(Boolean.class));
+										}
+										break;
+									case "BN-AODV":
+										// TODO
+										break;
+									default:
 										break;
 									}
-								}
-								stopButton.setEnabled(false);
-								startButton.setEnabled(true);
-								choice.setEnabled(true);
+									if(ispaused) {
+									
+										try {
+											synchronized(s_screen) {
+												/*
+												 * mette in pausa il thread su questo oggetto
+												 * finche non viene invocato il metodo notify su questo oggetto
+												 */
+												s_screen.wait();
+											}
+											
+										}catch(InterruptedException exc) {
+											System.out.println(exc);
+										}
+										
 
-								executionDate = new Date();
-								if (isSimulationOk) {
-									displayInfo("ASMETA model executed successfully. ["
-											+ dateFormat.format(executionDate) + "]");
+									}
+									Gs.loadLink(connectivityMatrix);						   
+								    for (int i = 1; i < n_host + 1; i++) {
+								    	if(ca_tot.containsKey(i)) {
+								    		drawConnections(s_panel,i,ca_tot.get(i),Color.YELLOW);
+								    	}
+								    }
+								    //System.out.println(pending);
+								    pendingList.removeAll();
+								    processCa(t_panel,q_panel,connectivityMatrix,pending);
+								    
+									s_panel.repaint();
+									t_panel.repaint();
+									q_panel.repaint();
+									Gs.repaint();
+									
+								 /* decommentare per mettere in pausa il programma dopo ogni mossa */
+									
+									//AODVParser.showOut(simulationDir + "\\logs\\out.txt");
+									
+								
+									
+									
+									
+									
 								}
-								float elapsedTime = (System.currentTimeMillis() - start) / 1000F;
-								displayInfo("Elapsed time: " + elapsedTime + " sec.");
+								debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "
+										+ isSimulationOk);
+							}
 
-								executionDate = null;
-							} catch (Exception e1) {
-								error(e1);
+							if (isSimulationOk) {
+								displayInfo("Writing session statistics...");
+								writeSessionStatistics(simulationDir, metricsList, selectedProtocol);
+								writeConnectivityMatrix(simulationDir, cmList, session);
+							} else {
+								break;
 							}
 						}
+						stopButton.setEnabled(false);
+						startButton.setEnabled(true);
+						choice.setEnabled(true);
+
+						executionDate = new Date();
+						if (isSimulationOk) {
+							displayInfo("ASMETA model executed successfully. ["
+									+ dateFormat.format(executionDate) + "]");
+						}
+						float elapsedTime = (System.currentTimeMillis() - start) / 1000F;
+						displayInfo("Elapsed time: " + elapsedTime + " sec.");
+
+						executionDate = null;
+					} catch (Exception e1) {
+						error(e1);
 					}
-				}).start();
+				}
+			}
+		});
+		startButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				
+					computation.start();
+					
 			}
 		});
 		
+		pauseb.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(ispaused == true) {
+					ispaused = false;
+					synchronized(s_screen) {
+				   	    s_screen.notify();
+					}
+					pauseb.setText("PAUSE");
+					}else {
+						ispaused = true;
+						pauseb.setText("RESTART");
+						}	
+			}
+		});
 		
 	
 	
@@ -884,11 +935,9 @@ public class Program extends Utility {
 	}
 	
 	//la numerazione degli host parte da 1
-	 private void processCa(Visual s,Visual f,ConnectivityMatrix cm,HashMap<Integer, List<connection_attempt>> pending) {
+	 private void processCa(Visual s,Visual f,ConnectivityMatrix<Boolean> cm,HashMap<Integer, List<connection_attempt>> pending) {
 		    ListIterator<connection_attempt> il = null;
 		    int from;
-		    int to;
-		   
 		    LinkedList<Integer> path;
 		    Set<Integer> key = pending.keySet();
 			Iterator<Integer> is = key.iterator();
