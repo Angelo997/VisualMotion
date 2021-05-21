@@ -539,6 +539,8 @@ public class Program extends Utility {
 										
 
 									}
+									AODVParser.showOut(simulationDir + "\\logs\\out.txt");
+									
 									Gs.loadLink(connectivityMatrix);						   
 								    for (int i = 1; i < n_host + 1; i++) {
 								    	if(ca_tot.containsKey(i)) {
@@ -556,7 +558,7 @@ public class Program extends Utility {
 									
 								 /* decommentare per mettere in pausa il programma dopo ogni mossa */
 									
-									//AODVParser.showOut(simulationDir + "\\logs\\out.txt");
+									
 									
 								
 									
@@ -648,6 +650,7 @@ public class Program extends Utility {
 				textPane.setText(String.valueOf(slider.getValue()) + " %");
 			}
 		});
+		
 		slider.setBackground(Color.LIGHT_GRAY);
 		slider.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		slider.setValue(20);
@@ -676,7 +679,6 @@ public class Program extends Utility {
 		slider_1.setPaintTicks(true);
 		slider_1.setLabelTable(slider_1.createStandardLabels(20, 0));
 		slider_1.setBounds(196, 207, 166, 47);
-		
 		frameALA.getContentPane().add(slider_1);
 
 		textPane_2.setEnabled(true);
@@ -696,7 +698,6 @@ public class Program extends Utility {
 		slider_2.setPaintTicks(true);
 		slider_2.setLabelTable(slider_2.createStandardLabels(20, 0));
 		slider_2.setBounds(196, 347, 166, 47);
-		
 		frameALA.getContentPane().add(slider_2);
 
 		fieldHost.setModel(new SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(2), null, Integer.valueOf(1)));
@@ -718,6 +719,7 @@ public class Program extends Utility {
 
 		textPane.setFont(new Font("Tahoma", Font.PLAIN, dim_label));
 		textPane.setText(String.valueOf(slider.getValue()) + " %");
+		textPane.setBounds(386, 256, 73, 29);
 		frameALA.getContentPane().add(textPane);
 
 		textPane_1.setFont(new Font("Tahoma", Font.PLAIN, dim_label));

@@ -344,32 +344,18 @@ private static void writeOut(String outputFile, java.awt.List progressList) {
 	}
 }
 private static void createJFrameOut() {
+	
 	if (out == null) {
 		out = new JFrame();
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		int x = (int) ((dimension.getWidth()*2/4));
 		int y = (int) (0);
 		out.setBounds(x,y, 415, 400);
-		out.getContentPane().setLayout(null);
 		out.getContentPane().add(progressList);
     	 out.setVisible(true);
     	 out.setResizable(false);
-    	JButton nextbutton = new JButton("NEXT");
-    	nextbutton.addMouseListener(new MouseAdapter() {
-    			@Override
-    			public void mousePressed(MouseEvent e) {
-    				synchronized(out) {
-    					
-    					out.notify();
-    				}
-    				
-    			}
-    		});
-    		
-    		nextbutton.setFont(new Font("Tahoma", Font.PLAIN, 20));
-    		nextbutton.setBounds(133, 310,(out.getWidth()/3) - 5, 40);
-    		out.getContentPane().add(nextbutton);
 		}
+	progressList.removeAll();
 }
 	/**
 	 *
@@ -380,18 +366,7 @@ private static void createJFrameOut() {
 	public static void showOut(String outputFile) {
 		createJFrameOut();
 		writeOut(outputFile,progressList);
-		progressList.setBounds(0,0, 400, 300);
-	
-			
-	    try {
-	    	synchronized(out){
-	    	 out.wait();
-	    	}
-	    	
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-	    progressList.removeAll();
+	    
 	}
 	
 	
