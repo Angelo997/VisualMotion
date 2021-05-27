@@ -522,8 +522,8 @@ public class Program extends Utility {
 									default:
 										break;
 									}
-									if(ispaused) {
 									
+									if(ispaused) {
 										try {
 											synchronized(s_screen) {
 												/*
@@ -531,17 +531,16 @@ public class Program extends Utility {
 												 * finche non viene invocato il metodo notify su questo oggetto
 												 */
 												s_screen.wait();
-											}
-											
+											}										
 										}catch(InterruptedException exc) {
 											System.out.println(exc);
 										}
-										
-
 									}
-									AODVParser.showOut(simulationDir + "\\logs\\out.txt");
+									//AODVParser.showOut(simulationDir + "\\logs\\out.txt");
 									
-									Gs.loadLink(connectivityMatrix);						   
+									Gs.loadLink(connectivityMatrix);
+									Gs.repaint();
+									
 								    for (int i = 1; i < n_host + 1; i++) {
 								    	if(ca_tot.containsKey(i)) {
 								    		drawConnections(s_panel,i,ca_tot.get(i),Color.YELLOW);
@@ -554,16 +553,8 @@ public class Program extends Utility {
 									s_panel.repaint();
 									t_panel.repaint();
 									q_panel.repaint();
-									Gs.repaint();
-									
 								 /* decommentare per mettere in pausa il programma dopo ogni mossa */
-									
-									
-									
-								
-									
-									
-									
+						
 									
 								}
 								debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "

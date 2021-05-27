@@ -611,30 +611,92 @@ definitions:
 	/* START PAR */
 			rule r_MemoryManager =
 			par
-			isLinked(host1,host3):=true
-			isLinked(host3,host1):=true
-			isLinked(host1,host4):=true
-			isLinked(host4,host1):=true
-			isLinked(host1,host5):=true
-			isLinked(host5,host1):=true
+			isLinked(host2,host3):=true
+			isLinked(host3,host2):=true
 			isLinked(host2,host4):=true
 			isLinked(host4,host2):=true
 			isLinked(host2,host5):=true
 			isLinked(host5,host2):=true
+			isLinked(host3,host4):=true
+			isLinked(host4,host3):=true
+			isLinked(host3,host5):=true
+			isLinked(host5,host3):=true
+			isLinked(host4,host5):=true
+			isLinked(host5,host4):=true
 
-			curSeqNum(host5):=1
-			lastKnownDestSeqNum(host5,host2):=undef
-			localReqCount(host5):=1
-			receivedReq(host5):=[(1,host5)]
-			waitingForRouteTo(host5,host2):=true
-			waitingForRouteToTmp(host5,host2):=5
+			curSeqNum(host1):=1
+			curSeqNum(host2):=1
+			curSeqNum(host4):=1
+			lastKnownDestSeqNum(host1,host2):=undef
+			lastKnownDestSeqNum(host1,host3):=undef
+			lastKnownDestSeqNum(host1,host4):=undef
+			lastKnownDestSeqNum(host1,host5):=undef
+			lastKnownDestSeqNum(host2,host1):=undef
+			lastKnownDestSeqNum(host2,host3):=undef
+			lastKnownDestSeqNum(host2,host5):=undef
+			lastKnownDestSeqNum(host4,host3):=undef
+			localReqCount(host1):=1
+			localReqCount(host2):=1
+			localReqCount(host4):=1
+			receivedReq(host1):=[(1,host1)]
+			receivedReq(host2):=[(1,host2)]
+			receivedReq(host3):=[(1,host2)]
+			receivedReq(host4):=[(1,host4)]
+			waitingForRouteTo(host1,host2):=true
+			waitingForRouteTo(host1,host3):=true
+			waitingForRouteTo(host1,host4):=true
+			waitingForRouteTo(host1,host5):=true
+			waitingForRouteTo(host2,host1):=true
+			waitingForRouteTo(host2,host5):=true
+			waitingForRouteTo(host4,host3):=true
+			waitingForRouteToTmp(host1,host2):=2
+			waitingForRouteToTmp(host1,host3):=2
+			waitingForRouteToTmp(host1,host4):=2
+			waitingForRouteToTmp(host1,host5):=2
+			waitingForRouteToTmp(host2,host1):=2
+			waitingForRouteToTmp(host2,host3):=2
+			waitingForRouteToTmp(host2,host5):=2
+			waitingForRouteToTmp(host4,host3):=5
 
-
-			extend Message with $_message1 do
+			extend RoutingTable with $_rt1,$_rt2 do
 				par
-									isConsumed(host1,$_message1):=false
-					messageRREQ($_message1):=(host5,1,0,host2,undef,1,host5)
+									active($_rt1):=true
+					active($_rt2):=true
+					entry($_rt1):=(host2,1,1,host2)
+					entry($_rt2):=(host3,0,1,host3)
+					entryFor(host2):=undef
+					entryFor(host3):=undef
+					owner($_rt1):=host3
+					owner($_rt2):=host2
+					precursor($_rt1):=[]
+					precursor($_rt2):=[]
+				endpar
+			extend Message with $_message1,$_message2,$_message3,$_message4,$_message5,$_message6,$_message7,$_message8,$_message9 do
+				par
+									isConsumed(host2,$_message8):=true
+					isConsumed(host2,$_message9):=false
+					isConsumed(host3,$_message5):=true
+					isConsumed(host3,$_message6):=true
+					isConsumed(host3,$_message7):=true
+					isConsumed(host5,$_message9):=false
+					messageRREP($_message8):=(host2,0,host3,0,host3)
+					messageRREQ($_message1):=(host1,1,0,host5,undef,1,host1)
+					messageRREQ($_message2):=(host1,1,0,host4,undef,1,host1)
+					messageRREQ($_message3):=(host1,1,0,host3,undef,1,host1)
+					messageRREQ($_message4):=(host1,1,0,host2,undef,1,host1)
+					messageRREQ($_message5):=(host2,1,0,host5,undef,1,host2)
+					messageRREQ($_message6):=(host2,1,0,host1,undef,1,host2)
+					messageRREQ($_message7):=(host2,1,0,host3,undef,1,host2)
+					messageRREQ($_message9):=(host4,1,0,host3,undef,1,host4)
 					messageType($_message1):=RREQ
+					messageType($_message2):=RREQ
+					messageType($_message3):=RREQ
+					messageType($_message4):=RREQ
+					messageType($_message5):=RREQ
+					messageType($_message6):=RREQ
+					messageType($_message7):=RREQ
+					messageType($_message8):=RREP
+					messageType($_message9):=RREQ
 				endpar
 	/* END PAR */
 			endpar
