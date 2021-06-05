@@ -6,13 +6,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -46,6 +49,7 @@ import javax.swing.JTextPane;
 
 import javax.swing.SpinnerNumberModel;
 
+import it.uniba.di.application.Visual.host;
 import it.uniba.di.parser.AODVParser;
 import it.uniba.di.parser.NAODVParser;
 import it.uniba.di.parser.Parser;
@@ -540,9 +544,9 @@ public class Program extends Utility {
 								    s_panel.clear();
 									t_panel.clear();
 									q_panel.clear();
-									Gs.loadLink(connectivityMatrix);
-									Gs.repaint();
+									Gs.clear();
 									
+									drawLinks(Gs,connectivityMatrix);
 								    for (int i = 1; i < n_host + 1; i++) {
 								    	if(ca_tot.containsKey(i)) {
 								    		drawConnections(s_panel,i,ca_tot.get(i),Color.YELLOW);
@@ -552,6 +556,7 @@ public class Program extends Utility {
 								    pendingList.removeAll();
 								    processCa(t_panel,q_panel,connectivityMatrix,pending);
 								
+								    Gs.repaint();
 									s_panel.repaint();
 									t_panel.repaint();
 									q_panel.repaint();
@@ -980,6 +985,16 @@ public class Program extends Utility {
 			} 
 		 
 	 }
+     private void drawLinks(Visual G,ConnectivityMatrix<Boolean> c) {
+			 //aggiungere un controllo se link è null
+			   for (int i = 0; i < G.n_host(); i++) {
+					for (int j = i + 1; j < G.n_host() && j != i; j++) {
+						if(c.get(i,j)) {
+						    G.drawLink(i, j, Color.BLACK);
+						}
+					}
+				}
+		 }
 	 
     
 

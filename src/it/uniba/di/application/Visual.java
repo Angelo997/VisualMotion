@@ -45,7 +45,7 @@ import it.uniba.di.support.structures.ConnectivityMatrix;
 public class Visual extends JPanel {
 	private double width; 
 	private double height;
-	private int n_host = 0;
+	static private int n_host = 0;
 	private HashMap<Integer,host> hosts; //tempo di ritrovamento degli elementi costante
 
 
@@ -84,6 +84,9 @@ public class Visual extends JPanel {
 		width = w;
 		height = h;
 	
+	}
+	public int n_host() {
+		return n_host;
 	}
 	
 	public void setNumberHost(int n){
@@ -214,31 +217,31 @@ public class Visual extends JPanel {
 		Graphics2D g2 = (Graphics2D) g;
 		 g2.setPaint(Color.BLACK);
 	}
-
-	private void drawLink(Graphics g) {
-		   Graphics2D g2 = (Graphics2D)g;
-		   double x;
-		   double y;
-		   Point2D p;
-		   Point2D c;
-		   
-		   double d = host.dim;
-		   g2.setPaint(Color.BLACK);
-		 //aggiungere un controllo se link è null
-		   
-		   for (int i = 0; i < n_host; i++) {
-			   x = (hosts.get(i).getX() + d/2);
-			   y = (hosts.get(i).getY() + d/2);
-				for (int j = i + 1; j < n_host && j != i; j++) {
-					if(link.get(i,j)) {
-						p = new Point2D.Double(x,y);
-						c = new Point2D.Double((hosts.get(j).getX() + d/2),(hosts.get(j).getY() + d/2));
-						quadto(p,c);
-					    g2.draw( new Line2D.Double(p,c));
-					}
-				}
-			}
+	
+	public void drawLink(int start,int end,Color c) {
+		Graphics2D g2 = OSG;
+		double x1;
+		double y1;
+		double x2;
+		double y2;
+		Point2D from;
+		Point2D to;
+		double d = host.dim;	
+		g2.setPaint(c);		
+				x1 = hosts.get(start).getX();
+				y1 = hosts.get(start).getY();
+				x2 = hosts.get(end).getX();
+				y2 = hosts.get(end).getY();
+					from = new Point2D.Double(x1 + d/2 ,y1 + d/2);
+					to = new Point2D.Double(x2 + d/2, y2 + d/2);				
+					quadto(from,to);
+					//disegna la linea
+					
+				    g2.setStroke(new BasicStroke(1)); //reimposta lo spessore della linea a 1
+				    g2.draw( new Line2D.Double(from,to));
+					reset_color(g2);
 	 }
+	
 	
 	public void drawConnection(int start,int end,Color c) {
 		Graphics2D g2 = OSG;
@@ -368,33 +371,33 @@ public class Visual extends JPanel {
 	   }  
 	  
 	}
-   protected void paintComponent(Graphics g) {
-	   super.paintComponent(g);
-	  
-	   Graphics2D g2 = (Graphics2D)g;
-	   
-	   
-	   //abilità antialiasing
-	   g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-			   RenderingHints.VALUE_ANTIALIAS_ON);
-	   
-	   g2.setPaint(Color.WHITE);
-	   g2.fillRect(0, 0,getWidth()-1,getHeight()-1);
-	  
-	   
-	   if(link != null) {drawLink(g);};
-
-	   g2.setPaint(Color.BLACK);
-	   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
-	
-	   
-	   g.drawImage(OSC,0,0,null);
-	   Graphics2D g3 = (Graphics2D)g.create();
-	   
-	   for (int i = 0; i < n_host; i++) {
-		   hosts.get(i).paint(g2);
-	   }  
-   }	    
+	   protected void paintComponent(Graphics g) {
+		   super.paintComponent(g);
+		  
+		   Graphics2D g2 = (Graphics2D)g;
+		   
+		   
+		   //abilità antialiasing
+		   /*disegna il quadrato bianco e il contorno nero*/
+		   g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				   RenderingHints.VALUE_ANTIALIAS_ON);
+		   
+		   g2.setPaint(Color.WHITE);
+		   g2.fillRect(0, 0,getWidth()-1,getHeight()-1);
+		  
+		   
+		   g2.setPaint(Color.BLACK);
+		   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
+		
+		   //disegna le connessioni
+		   g.drawImage(OSC,0,0,null);
+		   Graphics2D g3 = (Graphics2D)g.create();
+		   
+		   //disegna gli host
+		   for (int i = 0; i < n_host; i++) {
+			   hosts.get(i).paint(g2);
+		   }  
+	   }	     
 }
 
 
