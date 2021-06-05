@@ -170,7 +170,6 @@ public class Visual extends JPanel {
 	        
 	        if(lit_up) {
 	        	light_up(g2);
-	        	turn_off();
 	        }
 	        
 	        g2.setPaint(Color.BLACK);
@@ -362,8 +361,13 @@ public class Visual extends JPanel {
 			}
 		}
 	}
-	
-
+	void clear() {
+	   OSG.clearRect(0, 0,getWidth()-1,getHeight()-1);
+	   for (int i = 0; i < n_host; i++) {
+		   hosts.get(i).turn_off();
+	   }  
+	  
+	}
    protected void paintComponent(Graphics g) {
 	   super.paintComponent(g);
 	  
@@ -383,11 +387,10 @@ public class Visual extends JPanel {
 	   g2.setPaint(Color.BLACK);
 	   g2.draw(new Rectangle(0, 0,getWidth()-1,getHeight()-1));
 	
-	  
+	   
 	   g.drawImage(OSC,0,0,null);
 	   Graphics2D g3 = (Graphics2D)g.create();
 	   
-	   OSG.clearRect(0, 0,getWidth()-1,getHeight()-1);
 	   for (int i = 0; i < n_host; i++) {
 		   hosts.get(i).paint(g2);
 	   }  

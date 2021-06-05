@@ -537,7 +537,9 @@ public class Program extends Utility {
 										}
 									}
 									//AODVParser.showOut(simulationDir + "\\logs\\out.txt");
-									
+								    s_panel.clear();
+									t_panel.clear();
+									q_panel.clear();
 									Gs.loadLink(connectivityMatrix);
 									Gs.repaint();
 									
@@ -549,13 +551,14 @@ public class Program extends Utility {
 								    //System.out.println(pending);
 								    pendingList.removeAll();
 								    processCa(t_panel,q_panel,connectivityMatrix,pending);
-								    
+								
 									s_panel.repaint();
 									t_panel.repaint();
 									q_panel.repaint();
-								 /* decommentare per mettere in pausa il programma dopo ogni mossa */
-						
 									
+									
+									
+										
 								}
 								debug("session: " + session + " - move: " + moveCounter + " - isSimulationOk: "
 										+ isSimulationOk);
@@ -943,7 +946,7 @@ public class Program extends Utility {
 		    		
 		    		if(path != null) {
 		    				s.lightsHost(ca.getInit() - 1, ca.getD() - 1);
-		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ") -- connected");
+		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + ") -- Connected");
 		    			    //System.out.println(path);
 			    			drawpath(s,path,Color.GREEN);
 			    			il.remove();
@@ -951,11 +954,11 @@ public class Program extends Utility {
 		    		}else {
 		    			ca.decrase_t();
 		    			if(ca.getTimeOut() == 0) {
-		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ") -- failed");
+		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ") -- Failed");
 		    				f.drawConnection(ca.getInit() - 1, ca.getD() - 1,Color.RED);
 		    				il.remove();
 		    			}else {
-		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + "," + ca.getTimeOut() + ")");
+		    				pendingList.add("(" + ca.getInit() + "," + ca.getD() + ") -- Timeout: " +  ca.getTimeOut());
 		    			}
 		    		}
 		    	
