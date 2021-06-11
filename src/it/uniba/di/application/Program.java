@@ -266,16 +266,16 @@ public class Program extends Utility {
 		Visual s_panel  = new Visual(panelw, panelh);
 		s_panel.setBounds(x_pos, y_pos2,panelw, panelh);
 		
-		JLabel desc_t = new JLabel("Successful Connection");
+		JLabel desc_t = new JLabel("Successful Connections");
 		desc_t.setForeground(Color.BLACK);
 		desc_t.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
-		desc_t.setBounds(x_pos2, y_pos2 - 15,150, 15);
+		desc_t.setBounds(x_pos2, y_pos2 - 15,170, 15);
 		desc_t.setVisible(true);
 		s_screen.getContentPane().add(desc_t);
 		Visual t_panel  = new Visual(panelw , panelh);
 		t_panel.setBounds(x_pos2 ,y_pos2, panelw , panelh);
 		
-		JLabel desc_q = new JLabel("Failed Connection");
+		JLabel desc_q = new JLabel("Failed Connections");
 		desc_q.setForeground(Color.BLACK);
 		desc_q.setFont(new Font("Tahoma", Font.PLAIN + Font.BOLD, dim_label - 7));
 		desc_q.setBounds(x_pos2 ,y_pos - 15,150, 15);
